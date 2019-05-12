@@ -18,16 +18,8 @@ end entity cipher;
 
 architecture rtl of cipher is
   -- states
-  signal isl_valid_d1,
-         isl_valid_d2,
-         isl_valid_d3,
-         isl_valid_d4,
-         isl_valid_d5,
-         isl_valid_d6,
-         isl_valid_d7,
-         isl_valid_d8,
-         isl_valid_d9,
-         isl_valid_d10 : std_logic := '0';
+  signal isl_valid_d1 : std_logic := '0';
+  signal slv_stage : std_logic_vector(1 to 9) := (others => '0');
   signal sl_valid_out : std_logic := '0';
   signal sl_last_round : std_logic := '0';
 
@@ -47,7 +39,7 @@ begin
   i_key_exp : entity work.key_exp
   port map(
     isl_clk       => isl_clk,
-    isl_next_key  => isl_valid_d10,
+    isl_next_key  => slv_stage(9),
     isl_valid     => isl_valid,
     ia_data       => a_key_in,
     oa_data       => a_round_keys
@@ -71,15 +63,9 @@ begin
 
       -- start new round when new input came or when the last round is finished
       isl_valid_d1 <= isl_valid;
-      isl_valid_d2 <= '1' when isl_valid_d1 = '1' or isl_valid_d10 = '1' else '0';
-      isl_valid_d3 <= isl_valid_d2;
-      isl_valid_d4 <= isl_valid_d3;
-      isl_valid_d5 <= isl_valid_d4;
-      isl_valid_d6 <= isl_valid_d5;
-      isl_valid_d7 <= isl_valid_d6;
-      isl_valid_d8 <= isl_valid_d7;
-      isl_valid_d9 <= isl_valid_d8;
-      isl_valid_d10 <= '1' when isl_valid_d9 = '1' and sl_last_round = '0' else '0';
+      slv_stage(1) <= isl_valid_d1 or slv_stage(9);
+      slv_stage(2 to 8) <= slv_stage(1 to 7);
+      slv_stage(9) <= slv_stage(8) and not sl_last_round;
 
       -- keep last round and valid signal only high for one cycle
       if sl_last_round = '1' then
@@ -107,7 +93,7 @@ begin
       end if;
 
       -- substitute bytes
-      if isl_valid_d7 = '1' then
+      if slv_stage(6) = '1' then
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
             a_data_sbox(row, col) <= C_SBOX(to_integer(a_data_added(row, col)));
@@ -116,7 +102,7 @@ begin
       end if;
 
       -- shift rows
-      if isl_valid_d8 = '1' then
+      if slv_stage(7) = '1' then
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
             new_col := (col - row) mod C_STATE_COLS;
@@ -133,7 +119,7 @@ begin
       end if;
 
       -- mix columns
-      if isl_valid_d9 = '1' then
+      if slv_stage(8) = '1' then
         for col in 0 to C_STATE_COLS-1 loop
           a_data_mcols(0, col) <= double(a_data_srows(0, col)) xor
                                   triple(a_data_srows(1, col)) xor
@@ -156,7 +142,7 @@ begin
 
       -- TODO: merge the following two steps
       -- add key
-      if isl_valid_d10 = '1' then
+      if slv_stage(9) = '1' then
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
             a_data_added(row, col) <= a_round_keys(row, col) xor a_data_mcols(row, col);

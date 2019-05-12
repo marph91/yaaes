@@ -16,13 +16,7 @@ entity key_exp is
 end entity key_exp;
 
 architecture rtl of key_exp is
-  signal isl_valid_d1,
-         isl_valid_d2,
-         isl_valid_d3,
-         isl_valid_d4,
-         isl_valid_d5,
-         isl_valid_d6,
-         isl_valid_d7 : std_logic := '0';
+  signal slv_stage : std_logic_vector(1 to 7) := (others => '0');
   signal a_sub_word,
          a_rot_word,
          a_rcon_word,
@@ -34,13 +28,7 @@ begin
     if rising_edge(isl_clk) then
       -- key expansion, as described in: "FIPS 197, 5.2 Key Expansion"
 
-      isl_valid_d1 <= isl_valid or isl_next_key;
-      isl_valid_d2 <= isl_valid_d1;
-      isl_valid_d3 <= isl_valid_d2;
-      isl_valid_d4 <= isl_valid_d3;
-      isl_valid_d5 <= isl_valid_d4;
-      isl_valid_d6 <= isl_valid_d5;
-      isl_valid_d7 <= isl_valid_d6;
+      slv_stage <= (isl_valid or isl_next_key) & slv_stage(slv_stage'LOW to slv_stage'HIGH-1);
 
       -- first key is the input
       if isl_valid = '1' then
@@ -49,21 +37,21 @@ begin
       end if;
 
       -- rotate
-      if isl_valid_d1 = '1' then
+      if slv_stage(1) = '1' then
         for row in a_rot_word'RANGE loop
           a_rot_word((row-1) mod 4) <= a_data_out(row, 3);
         end loop;
       end if;
 
       -- substitute
-      if isl_valid_d2 = '1' then
+      if slv_stage(2) = '1' then
         for col in a_rot_word'RANGE loop
           a_sub_word(col) <= C_SBOX(to_integer(a_rot_word(col)));
         end loop;
       end if;
 
       -- xor rcon
-      if isl_valid_d3 = '1' then
+      if slv_stage(3) = '1' then
         for col in a_sub_word'RANGE loop
           a_rcon_word(col) <= a_sub_word(col) xor a_rcon(col);
         end loop;
@@ -73,26 +61,26 @@ begin
       end if;
 
       -- xor last word
-      if isl_valid_d4 = '1' then
+      if slv_stage(4) = '1' then
         for row in a_rot_word'RANGE loop
           a_data_out(row, 0) <= a_data_out(row, 0) xor a_rcon_word(row);
         end loop;
       end if;
 
       -- assign the following three words -> no sub, rot, ... needed
-      if isl_valid_d5 = '1' then
+      if slv_stage(5) = '1' then
         for row in a_rot_word'RANGE loop
           a_data_out(row, 1) <= a_data_out(row, 0) xor a_data_out(row, 1);
         end loop;
       end if;
 
-      if isl_valid_d6 = '1' then
+      if slv_stage(6) = '1' then
         for row in a_rot_word'RANGE loop
           a_data_out(row, 2) <= a_data_out(row, 1) xor a_data_out(row, 2);
         end loop;
       end if;
 
-      if isl_valid_d7 = '1' then
+      if slv_stage(7) = '1' then
         for row in a_rot_word'RANGE loop
           a_data_out(row, 3) <= a_data_out(row, 2) xor a_data_out(row, 3);
         end loop;
