@@ -1,0 +1,11 @@
+*.pdf
+*.gtkw
+
+# vunit files
+sim/vunit/aes/vunit_out/
+
+# ghdl files
+build/
+
+# vivado files
+aes/
