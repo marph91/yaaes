@@ -8,4 +8,4 @@ sim/vunit/aes/vunit_out/
 build/
 
 # vivado files
-aes/
+aes_vivado/
