@@ -9,9 +9,9 @@ entity cipher is
   port (
     isl_clk   : in std_logic;
     isl_valid : in std_logic;
-    islv_data : in std_logic_vector(127 downto 0);
-    islv_key  : in std_logic_vector(127 downto 0);
-    oslv_data : out std_logic_vector(127 downto 0);
+    ia_data : in t_state;
+    ia_key  : in t_state;
+    oa_data : out t_state;
     osl_valid : out std_logic
   );
 end entity cipher;
@@ -24,7 +24,6 @@ architecture rtl of cipher is
 
   -- data container
   signal a_key_in,
-         a_data_mod,
          a_data_in,
          a_data_added,
          a_data_sbox,
@@ -40,19 +39,9 @@ begin
     isl_clk       => isl_clk,
     isl_next_key  => slv_stage(9),
     isl_valid     => isl_valid,
-    ia_data       => a_key_in,
+    ia_data       => ia_key,
     oa_data       => a_round_keys
   );
-
-  -- convert input and output (slv <-> array) and revert the vectors bytewise
-  -- TODO: is there a better way for the conversion?
-  gen_rows : for row in 0 to C_STATE_ROWS-1 generate
-    gen_cols : for col in 0 to C_STATE_COLS-1 generate
-      a_data_in(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(islv_data((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
-      a_key_in(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(islv_key((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
-      oslv_data((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(a_data_added(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
-    end generate;
-  end generate;
 
   process(isl_clk)
     variable new_col : integer range 0 to 3 := 0;
@@ -77,7 +66,7 @@ begin
 
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
-            a_data_added(row, col) <= a_key_in(row, col) xor a_data_in(row, col);
+            a_data_added(row, col) <= ia_key(row, col) xor ia_data(row, col);
           end loop;
         end loop;
       end if;
@@ -151,5 +140,6 @@ begin
     end if;
   end process;
 
+  oa_data <= a_data_added;
   osl_valid <= sl_valid_out;
 end architecture rtl;

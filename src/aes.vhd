@@ -23,11 +23,16 @@ end entity aes;
 
 architecture rtl of aes is
   -- TODO: use record for cipher related signals
+  -- TODO: enable bitwidth /= 128, i. e. 8, 16, 32
   signal sl_valid_in,
          sl_valid_out : std_logic := '0';
   signal slv_data_in,
          slv_key_in,
          slv_data_out : std_logic_vector(127 downto 0) := (others => '0');
+  
+  signal a_key_in,
+         a_data_in,
+         a_data_out : t_state := (others => (others => (others => '0')));
   
   signal slv_next_iv : std_logic_vector(127 downto 0) := (others => '0');
   
@@ -38,11 +43,21 @@ begin
   port map(
     isl_clk   => isl_clk,
     isl_valid => isl_valid,
-    islv_data => slv_data_in,
-    islv_key  => slv_key_in,
-    oslv_data => slv_data_out,
+    ia_data => a_data_in,
+    ia_key  => a_key_in,
+    oa_data => a_data_out,
     osl_valid => osl_valid
   );
+
+  -- convert input and output (slv <-> array) and revert the vectors bytewise
+  -- TODO: is there a better way for the conversion?
+  gen_rows : for row in 0 to C_STATE_ROWS-1 generate
+    gen_cols : for col in 0 to C_STATE_COLS-1 generate
+      a_data_in(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(slv_data_in((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
+      a_key_in(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(slv_key_in((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
+      slv_data_out((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(a_data_out(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
+    end generate;
+  end generate;
   
   gen_encryption : if C_ENCRYPTION = '1' generate
     gen_ecb : if C_MODE = "ECB" generate

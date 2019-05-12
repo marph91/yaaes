@@ -10,8 +10,8 @@ entity key_exp is
     isl_clk       : in std_logic;
     isl_next_key  : in std_logic;
     isl_valid     : in std_logic;
-    ia_data       : in t_state; -- initial key
-    oa_data       : out t_state -- key expansion for next timestep
+    ia_data       : in t_state;
+    oa_data       : out t_state
   );
 end entity key_exp;
 
