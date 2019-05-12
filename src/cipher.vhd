@@ -18,7 +18,6 @@ end entity cipher;
 
 architecture rtl of cipher is
   -- states
-  signal isl_valid_d1 : std_logic := '0';
   signal slv_stage : std_logic_vector(1 to 9) := (others => '0');
   signal sl_valid_out : std_logic := '0';
   signal sl_last_round : std_logic := '0';
@@ -62,8 +61,7 @@ begin
       -- cipher, as described in: "FIPS 197, 5.1 Cipher"
 
       -- start new round when new input came or when the last round is finished
-      isl_valid_d1 <= isl_valid;
-      slv_stage(1) <= isl_valid_d1 or slv_stage(9);
+      slv_stage(1) <= isl_valid or slv_stage(9);
       slv_stage(2 to 8) <= slv_stage(1 to 7);
       slv_stage(9) <= slv_stage(8) and not sl_last_round;
 
@@ -73,21 +71,13 @@ begin
       end if;
       sl_valid_out <= sl_last_round;
 
-      -- input modification
+      -- initial add key
       if isl_valid = '1' then
         int_round_cnt <= 0;
+
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
-            a_data_mod(row, col) <= a_data_in(row, col);
-          end loop;
-        end loop;
-      end if;
-      
-      -- initial add key
-      if isl_valid_d1 = '1' then
-        for row in 0 to C_STATE_ROWS-1 loop
-          for col in 0 to C_STATE_COLS-1 loop
-            a_data_added(row, col) <= a_key_in(row, col) xor a_data_mod(row, col);
+            a_data_added(row, col) <= a_key_in(row, col) xor a_data_in(row, col);
           end loop;
         end loop;
       end if;
