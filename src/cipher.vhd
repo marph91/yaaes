@@ -64,11 +64,7 @@ begin
       if isl_valid = '1' then
         int_round_cnt <= 0;
 
-        for row in 0 to C_STATE_ROWS-1 loop
-          for col in 0 to C_STATE_COLS-1 loop
-            a_data_added(row, col) <= ia_key(row, col) xor ia_data(row, col);
-          end loop;
-        end loop;
+        a_data_added <= xor_array(ia_key, ia_data);
       end if;
 
       -- substitute bytes
@@ -122,20 +118,12 @@ begin
       -- TODO: merge the following two steps
       -- add key
       if slv_stage(9) = '1' then
-        for row in 0 to C_STATE_ROWS-1 loop
-          for col in 0 to C_STATE_COLS-1 loop
-            a_data_added(row, col) <= a_round_keys(row, col) xor a_data_mcols(row, col);
-          end loop;
-        end loop;
+        a_data_added <= xor_array(a_round_keys, a_data_mcols);
       end if;
 
       -- final add key
       if sl_last_round = '1' then
-        for row in 0 to C_STATE_ROWS-1 loop
-          for col in 0 to C_STATE_COLS-1 loop
-            a_data_added(row, col) <= a_round_keys(row, col) xor a_data_srows(row, col);
-          end loop;
-        end loop;
+        a_data_added <= xor_array(a_round_keys, a_data_srows);
       end if;
     end if;
   end process;

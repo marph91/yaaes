@@ -8,7 +8,8 @@ library work;
 entity aes is
   generic (
     C_MODE : string := "ECB";
-    C_ENCRYPTION : std_logic := '1'
+    C_ENCRYPTION : std_logic := '1';
+    C_BITWIDTH : integer range 8 to 128 := 128
   );
   port (
     isl_clk         : in std_logic;

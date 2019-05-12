@@ -18,6 +18,8 @@ package aes_pkg is
 
   function double(value : unsigned(7 downto 0)) return unsigned;
   function triple(value : unsigned(7 downto 0)) return unsigned;
+
+  function xor_array(a, b : t_state) return t_state;
 end package aes_pkg;
 
 package body aes_pkg is
@@ -56,4 +58,18 @@ package body aes_pkg is
     begin
       return value xor double(value);
     end triple;
+
+    -- xor two arrays
+    function xor_array(a, b : t_state) return t_state is
+      variable c : t_state;
+    begin
+      assert a'LENGTH(1) = b'LENGTH(1);
+      assert a'LENGTH(2) = b'LENGTH(2);
+      for row in a'RANGE(1) loop
+        for col in a'RANGE(2) loop
+          c(row, col) := a(row, col) xor b(row, col);
+        end loop;
+      end loop;
+      return c;
+    end xor_array;
 end package body;
