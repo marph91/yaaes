@@ -28,7 +28,6 @@ architecture rtl of key_exp is
          a_rcon_word,
          a_rcon : t_word := (others => (others => '0'));
   signal a_data_out : t_state := (others => (others => (others => '0')));
-  signal int_key_cnt : integer range 0 to 13 := 0;
 begin
   process(isl_clk)
   begin
@@ -45,7 +44,7 @@ begin
 
       -- first key is the input
       if isl_valid = '1' then
-        int_key_cnt <= 0;
+        a_rcon(0) <= x"01";
         a_data_out <= ia_data;
       end if;
 
@@ -61,9 +60,6 @@ begin
         for col in a_rot_word'RANGE loop
           a_sub_word(col) <= C_SBOX(to_integer(a_rot_word(col)));
         end loop;
-
-        -- TODO: calculate rcon to remove int_key_cnt
-        a_rcon(0) <= C_RCON(int_key_cnt);
       end if;
 
       -- xor rcon
@@ -71,6 +67,9 @@ begin
         for col in a_sub_word'RANGE loop
           a_rcon_word(col) <= a_sub_word(col) xor a_rcon(col);
         end loop;
+
+        -- calculate round constant, as defined in: "FIPS 197, 5.2 Key Expansion"
+        a_rcon(0) <= double(a_rcon(0));
       end if;
 
       -- xor last word
@@ -97,10 +96,6 @@ begin
         for row in a_rot_word'RANGE loop
           a_data_out(row, 3) <= a_data_out(row, 2) xor a_data_out(row, 3);
         end loop;
-        
-        if int_key_cnt < 9 then
-          int_key_cnt <= int_key_cnt + 1;
-        end if;
       end if;
     end if;
   end process;

@@ -15,16 +15,12 @@ package aes_pkg is
   subtype t_sbox is t_usig_1d(0 to 255);
 
   constant C_SBOX : t_sbox;
-  constant C_RCON : t_usig_1d;
 
   function double(value : unsigned(7 downto 0)) return unsigned;
   function triple(value : unsigned(7 downto 0)) return unsigned;
 end package aes_pkg;
 
 package body aes_pkg is
-  -- round constant, as defined in: "FIPS 197, 5.2 Key Expansion"
-  constant C_RCON : t_usig_1d := (x"01", x"02", x"04", x"08", x"10", x"20", x"40", x"80", x"1b", x"36");
-
   -- substitution box, as defined in: "FIPS 197, Figure 7. S-box"
   constant C_SBOX : t_sbox := (
     x"63", x"7c", x"77", x"7b", x"f2", x"6b", x"6f", x"c5", x"30", x"01", x"67", x"2b", x"fe", x"d7", x"ab", x"76",

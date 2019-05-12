@@ -154,6 +154,7 @@ begin
         end loop;
       end if;
 
+      -- TODO: merge the following two steps
       -- add key
       if isl_valid_d10 = '1' then
         for row in 0 to C_STATE_ROWS-1 loop
