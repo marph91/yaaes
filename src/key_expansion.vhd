@@ -8,14 +8,15 @@ library work;
 entity key_exp is
   port (
     isl_clk       : in std_logic;
+    isl_next_key  : in std_logic;
     isl_valid     : in std_logic;
-    ia_data       : in t_state; -- key
-    oa_data       : out t_keys -- key expansion for next timestep
+    ia_data       : in t_state; -- initial key
+    oa_data       : out t_state -- key expansion for next timestep
   );
 end entity key_exp;
 
 architecture rtl of key_exp is
-  signal sl_next_round : std_logic := '0';
+  -- signal sl_next_round : std_logic := '0';
   signal isl_valid_d1,
          isl_valid_d2,
          isl_valid_d3,
@@ -27,16 +28,15 @@ architecture rtl of key_exp is
          a_rot_word,
          a_rcon_word,
          a_rcon : t_word := (others => (others => '0'));
-  signal a_data_out : t_keys := (others => (others => (others => (others => '0'))));
-  signal int_key_cnt : integer := 0;
+  signal a_data_out : t_state := (others => (others => (others => '0')));
+  signal int_key_cnt : integer range 0 to 13 := 0;
 begin
   process(isl_clk)
-    -- variable a_rot_word : t_word := (others => (others => '0'));
   begin
     if rising_edge(isl_clk) then
       -- key expansion, as described in: "FIPS 197, 5.2 Key Expansion"
 
-      isl_valid_d1 <= isl_valid or sl_next_round;
+      isl_valid_d1 <= isl_valid or isl_next_key;
       isl_valid_d2 <= isl_valid_d1;
       isl_valid_d3 <= isl_valid_d2;
       isl_valid_d4 <= isl_valid_d3;
@@ -47,17 +47,17 @@ begin
       -- first key is the input; rotation
       if isl_valid = '1' then
         int_key_cnt <= 0;
-        a_data_out(0) <= ia_data;
+        a_data_out <= ia_data;
       end if;
 
-      if sl_next_round = '1' then
-        sl_next_round <= '0';
-      end if;
+      -- if sl_next_round = '1' then
+      --   sl_next_round <= '0';
+      -- end if;
 
       -- rotate
       if isl_valid_d1 = '1' then
         for row in a_rot_word'RANGE loop
-          a_rot_word((row-1) mod 4) <= a_data_out(int_key_cnt)(row, 3);
+          a_rot_word((row-1) mod 4) <= a_data_out(row, 3);
         end loop;
       end if;
 
@@ -80,31 +80,31 @@ begin
       -- xor last word
       if isl_valid_d4 = '1' then
         for row in a_rot_word'RANGE loop
-          a_data_out(int_key_cnt + 1)(row, 0) <= a_data_out(int_key_cnt)(row, 0) xor a_rcon_word(row);
+          a_data_out(row, 0) <= a_data_out(row, 0) xor a_rcon_word(row);
         end loop;
       end if;
 
       -- assign the following three words -> no sub, rot, ... needed
       if isl_valid_d5 = '1' then
         for row in a_rot_word'RANGE loop
-          a_data_out(int_key_cnt + 1)(row, 1) <= a_data_out(int_key_cnt + 1)(row, 0) xor a_data_out(int_key_cnt)(row, 1);
+          a_data_out(row, 1) <= a_data_out(row, 0) xor a_data_out(row, 1);
         end loop;
       end if;
 
       if isl_valid_d6 = '1' then
         for row in a_rot_word'RANGE loop
-          a_data_out(int_key_cnt + 1)(row, 2) <= a_data_out(int_key_cnt + 1)(row, 1) xor a_data_out(int_key_cnt)(row, 2);
+          a_data_out(row, 2) <= a_data_out(row, 1) xor a_data_out(row, 2);
         end loop;
       end if;
 
       if isl_valid_d7 = '1' then
         for row in a_rot_word'RANGE loop
-          a_data_out(int_key_cnt + 1)(row, 3) <= a_data_out(int_key_cnt + 1)(row, 2) xor a_data_out(int_key_cnt)(row, 3);
+          a_data_out(row, 3) <= a_data_out(row, 2) xor a_data_out(row, 3);
         end loop;
         
         if int_key_cnt < 9 then
           int_key_cnt <= int_key_cnt + 1;
-          sl_next_round <= '1';
+          -- sl_next_round <= '1';
         end if;
       end if;
     end if;
