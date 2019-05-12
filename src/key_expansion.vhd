@@ -16,7 +16,6 @@ entity key_exp is
 end entity key_exp;
 
 architecture rtl of key_exp is
-  -- signal sl_next_round : std_logic := '0';
   signal isl_valid_d1,
          isl_valid_d2,
          isl_valid_d3,
@@ -44,15 +43,11 @@ begin
       isl_valid_d6 <= isl_valid_d5;
       isl_valid_d7 <= isl_valid_d6;
 
-      -- first key is the input; rotation
+      -- first key is the input
       if isl_valid = '1' then
         int_key_cnt <= 0;
         a_data_out <= ia_data;
       end if;
-
-      -- if sl_next_round = '1' then
-      --   sl_next_round <= '0';
-      -- end if;
 
       -- rotate
       if isl_valid_d1 = '1' then
@@ -67,6 +62,7 @@ begin
           a_sub_word(col) <= C_SBOX(to_integer(a_rot_word(col)));
         end loop;
 
+        -- TODO: calculate rcon to remove int_key_cnt
         a_rcon(0) <= C_RCON(int_key_cnt);
       end if;
 
@@ -104,7 +100,6 @@ begin
         
         if int_key_cnt < 9 then
           int_key_cnt <= int_key_cnt + 1;
-          -- sl_next_round <= '1';
         end if;
       end if;
     end if;

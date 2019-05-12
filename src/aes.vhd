@@ -37,56 +37,46 @@ begin
   i_cipher : entity work.cipher
   port map(
     isl_clk   => isl_clk,
-    isl_valid => sl_valid_in,
+    isl_valid => isl_valid,
     islv_data => slv_data_in,
     islv_key  => slv_key_in,
     oslv_data => slv_data_out,
-    osl_valid => sl_valid_out
+    osl_valid => osl_valid
   );
+  
+  gen_encryption : if C_ENCRYPTION = '1' generate
+    gen_ecb : if C_MODE = "ECB" generate
+      slv_data_in <= islv_plaintext;
+      slv_key_in <= islv_key;
+      oslv_ciphertext <= slv_data_out;
+    end generate;
 
-  -- TODO: add decryption and counter mode, as described in: "NIST SP 800-38A"
-  -- TODO: add inverse cipher, as described in: "NIST FIPS 197, 5.3 Inverse Cipher"
+    gen_cbc : if C_MODE = "CBC" generate
+      slv_data_in <= slv_data_out xor islv_plaintext when sl_chain = '1'
+                     else islv_iv xor islv_plaintext;
+      slv_key_in <= islv_key;
+      oslv_ciphertext <= slv_data_out;
+    end generate;
 
-  process(isl_clk)
-  begin
-    if rising_edge(isl_clk) then
-      if isl_valid = '1' then
-        sl_chain <= '1';
+    gen_cfb : if C_MODE = "CFB" generate
+      slv_data_in <= slv_next_iv when sl_chain = '1' else islv_iv;
+      slv_key_in <= islv_key;
+      slv_next_iv <= slv_data_out xor islv_plaintext;
+      oslv_ciphertext <= slv_data_out xor islv_plaintext;
+    end generate;
 
-        -- TODO: probably generate is the better option
-        if C_MODE = "ECB" then
-          slv_data_in <= islv_plaintext;
-          slv_key_in <= islv_key;
-        elsif C_MODE = "CBC" then
-          slv_data_in <= slv_data_out xor islv_plaintext when sl_chain = '1'
-                         else islv_iv xor islv_plaintext;
-          slv_key_in <= islv_key;
-        elsif C_MODE = "CFB" then
-          slv_data_in <= slv_next_iv when sl_chain = '1' else islv_iv;
-          slv_key_in <= islv_key;
-        elsif C_MODE = "OFB" then
-          slv_data_in <= slv_data_out when sl_chain = '1' else islv_iv;
-          slv_key_in <= islv_key;
-        end if;
-      end if;
-      sl_valid_in <= isl_valid;
-      
+    gen_ofb : if C_MODE = "OFB" generate
+      slv_data_in <= slv_data_out when sl_chain = '1' else islv_iv;
+      slv_key_in <= islv_key;
+      oslv_ciphertext <= slv_data_out xor islv_plaintext;
+    end generate;
 
-      if sl_valid_out = '1' then
-        -- TODO: generate
-        if C_MODE = "ECB" then
-          oslv_ciphertext <= slv_data_out;
-        elsif C_MODE = "CBC" then
-          oslv_ciphertext <= slv_data_out;
-        elsif C_MODE = "CFB" then
-          slv_next_iv <= slv_data_out xor islv_plaintext;
-          oslv_ciphertext <= slv_data_out xor islv_plaintext;
-        elsif C_MODE = "OFB" then
-          oslv_ciphertext <= slv_data_out xor islv_plaintext;
-        end if;
-      end if;
-      osl_valid <= sl_valid_out;
-      
-    end if;
-  end process;
+    gen_ctr : if C_MODE = "OFB" generate
+      -- TODO: add counter mode, as described in: "NIST SP 800-38A"
+    end generate;
+  end generate;
+
+  gen_decryption : if C_ENCRYPTION = '0' generate
+    -- TODO: add decryption, respectively inverse cipher, as described in: "NIST FIPS 197, 5.3 Inverse Cipher"
+  end generate;
 end architecture rtl;
