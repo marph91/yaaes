@@ -14,10 +14,10 @@ entity aes is
   port (
     isl_clk         : in std_logic;
     isl_valid       : in std_logic;
-    islv_plaintext  : in std_logic_vector(127 downto 0);
-    islv_key        : in std_logic_vector(127 downto 0);
-    islv_iv         : in std_logic_vector(127 downto 0);
-    oslv_ciphertext : out std_logic_vector(127 downto 0);
+    islv_plaintext  : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    islv_key        : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    islv_iv         : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    oslv_ciphertext : out std_logic_vector(C_BITWIDTH-1 downto 0);
     osl_valid       : out std_logic
   );
 end entity aes;
@@ -25,40 +25,57 @@ end entity aes;
 architecture rtl of aes is
   -- TODO: use record for cipher related signals
   -- TODO: enable bitwidth /= 128, i. e. 8, 16, 32
-  signal sl_valid_in,
+  signal sl_valid_conv,
+         sl_valid_cipher,
          sl_valid_out : std_logic := '0';
   signal slv_data_in,
          slv_key_in,
-         slv_data_out : std_logic_vector(127 downto 0) := (others => '0');
-  
-  signal a_key_in,
-         a_data_in,
+         slv_data_out : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
+  signal a_key_conv,
+         a_data_conv,
+         a_data_cipher,
          a_data_out : t_state := (others => (others => (others => '0')));
   
-  signal slv_next_iv : std_logic_vector(127 downto 0) := (others => '0');
+  signal slv_next_iv : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
   
   signal sl_chain : std_logic := '0';
 
 begin
-  i_cipher : entity work.cipher
+  i_input_conversion : entity work.input_conversion
+  generic map(
+    C_BITWIDTH => C_BITWIDTH
+  )
   port map(
     isl_clk   => isl_clk,
     isl_valid => isl_valid,
-    ia_data => a_data_in,
-    ia_key  => a_key_in,
-    oa_data => a_data_out,
-    osl_valid => osl_valid
+    islv_data => slv_data_in,
+    islv_key  => slv_key_in,
+    oa_key    => a_key_conv,
+    oa_data   => a_data_conv,
+    osl_valid => sl_valid_conv
   );
 
-  -- convert input and output (slv <-> array) and revert the vectors bytewise
-  -- TODO: is there a better way for the conversion?
-  gen_rows : for row in 0 to C_STATE_ROWS-1 generate
-    gen_cols : for col in 0 to C_STATE_COLS-1 generate
-      a_data_in(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(slv_data_in((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
-      a_key_in(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(slv_key_in((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
-      slv_data_out((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(a_data_out(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
-    end generate;
-  end generate;
+  i_cipher : entity work.cipher
+  port map(
+    isl_clk   => isl_clk,
+    isl_valid => sl_valid_conv,
+    ia_data   => a_data_conv,
+    ia_key    => a_key_conv,
+    oa_data   => a_data_cipher,
+    osl_valid => sl_valid_cipher
+  );
+
+  i_output_conversion : entity work.output_conversion
+  generic map(
+    C_BITWIDTH => C_BITWIDTH
+  )
+  port map(
+    isl_clk   => isl_clk,
+    isl_valid => sl_valid_cipher,
+    ia_data   => a_data_cipher,
+    oslv_data => slv_data_out,
+    osl_valid => osl_valid
+  );
   
   gen_encryption : if C_ENCRYPTION = '1' generate
     gen_ecb : if C_MODE = "ECB" generate

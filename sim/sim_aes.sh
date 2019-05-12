@@ -10,6 +10,8 @@ mkdir -p "$ROOT"/build
 cd "$ROOT"/build
 
 ghdl -a "$GHDL_ARGS" "$ROOT"/src/aes_pkg.vhd
+ghdl -a "$GHDL_ARGS" "$ROOT"/src/input_conversion.vhd
+ghdl -a "$GHDL_ARGS" "$ROOT"/src/output_conversion.vhd
 ghdl -a "$GHDL_ARGS" "$ROOT"/src/key_expansion.vhd
 ghdl -a "$GHDL_ARGS" "$ROOT"/src/cipher.vhd
 ghdl -a "$GHDL_ARGS" "$ROOT"/src/aes.vhd
