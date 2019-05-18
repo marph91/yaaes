@@ -11,7 +11,6 @@ package aes_pkg is
   
   subtype t_word is t_usig_1d(0 to C_STATE_COLS-1);
   subtype t_state is t_usig_2d(0 to C_STATE_ROWS-1, 0 to C_STATE_COLS-1);
-  type t_keys is array(0 to 10) of t_state;
   subtype t_sbox is t_usig_1d(0 to 255);
 
   constant C_SBOX : t_sbox;

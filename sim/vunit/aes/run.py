@@ -48,7 +48,6 @@ def encrypt(plaintext, key, iv, mode):
 
 def create_test_suite(ui):
     root = os.path.dirname(__file__)
-    print(root)
 
     ui.add_array_util()
     lib = ui.add_library("lib")

@@ -24,7 +24,6 @@ end entity aes;
 
 architecture rtl of aes is
   -- TODO: use record for cipher related signals
-  -- TODO: enable bitwidth /= 128, i. e. 8, 16, 32
   signal sl_valid_conv,
          sl_valid_cipher,
          sl_valid_out : std_logic := '0';
