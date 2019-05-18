@@ -2,7 +2,7 @@
 *.gtkw
 
 # vunit files
-sim/vunit/*/vunit_out/
+**/vunit_out/
 
 # ghdl files
 build/
