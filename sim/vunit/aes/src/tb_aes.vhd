@@ -11,6 +11,7 @@ library vunit_lib;
 entity tb_aes is
   generic (
     runner_cfg    : string;
+    C_BITWIDTH    : integer;
     C_MODE        : string;
     C_PLAINTEXT1  : string;
     C_KEY1        : string;
@@ -29,10 +30,10 @@ architecture rtl of tb_aes is
   signal sl_clk : std_logic := '0';
   signal sl_valid_in : std_logic := '0';
 
-  signal slv_data_in : std_logic_vector(127 downto 0) := x"340737e0a29831318d305a88a8f64332";
-  signal slv_key_in : std_logic_vector(127 downto 0) := x"3c88a6164f15d215cff7ae7e09ab282b";
-  signal slv_iv_in : std_logic_vector(127 downto 0) := x"00000000000000000000000000000000";
-  signal slv_data_out : std_logic_vector(127 downto 0);
+  signal slv_data_in : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
+  signal slv_key_in : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
+  signal slv_iv_in : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
+  signal slv_data_out : std_logic_vector(C_BITWIDTH-1 downto 0);
   signal sl_valid_out : std_logic;
 
   signal sl_start,
@@ -77,6 +78,7 @@ architecture rtl of tb_aes is
 begin
   dut_aes: entity work.aes
   generic map (
+    C_BITWIDTH => C_BITWIDTH,
     C_MODE => C_MODE
   )
 	port map (
@@ -124,18 +126,24 @@ begin
     sl_stimuli_done <= '0';
 
     sl_valid_in <= '1';
-    slv_data_in <= hex_to_slv(C_PLAINTEXT1);
-    slv_key_in <= hex_to_slv(C_KEY1);
-    slv_iv_in <= hex_to_slv(C_IV1);
-    wait until rising_edge(sl_clk);
+    for i in 128/C_BITWIDTH-1 downto 0 loop
+      slv_data_in <= hex_to_slv(C_PLAINTEXT1)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      slv_key_in <= hex_to_slv(C_KEY1)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      slv_iv_in <= hex_to_slv(C_IV1)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      wait until rising_edge(sl_clk);
+    end loop;
+
     sl_valid_in <= '0';
     wait until rising_edge(sl_clk) and sl_valid_out = '1';
 
     sl_valid_in <= '1';
-    slv_data_in <= hex_to_slv(C_PLAINTEXT2);
-    slv_key_in <= hex_to_slv(C_KEY2);
-    slv_iv_in <= hex_to_slv(C_IV2);
-    wait until rising_edge(sl_clk);
+    for i in 128/C_BITWIDTH-1 downto 0 loop
+      slv_data_in <= hex_to_slv(C_PLAINTEXT2)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      slv_key_in <= hex_to_slv(C_KEY2)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      slv_iv_in <= hex_to_slv(C_IV2)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      wait until rising_edge(sl_clk);
+    end loop;
+
     sl_valid_in <= '0';
 
     sl_stimuli_done <= '1';
@@ -146,11 +154,15 @@ begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_data_check_done <= '0';
 
-    wait until rising_edge(sl_clk) and sl_valid_out = '1';
-    CHECK_EQUAL(slv_data_out, hex_to_slv(C_CIPHERTEXT1));
+    for i in 128/C_BITWIDTH-1 downto 0 loop
+      wait until rising_edge(sl_clk) and sl_valid_out = '1';
+      CHECK_EQUAL(slv_data_out, hex_to_slv(C_CIPHERTEXT1)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH));
+    end loop;
 
-    wait until rising_edge(sl_clk) and sl_valid_out = '1';
-    CHECK_EQUAL(slv_data_out, hex_to_slv(C_CIPHERTEXT2));
+    for i in 128/C_BITWIDTH-1 downto 0 loop
+      wait until rising_edge(sl_clk) and sl_valid_out = '1';
+      CHECK_EQUAL(slv_data_out, hex_to_slv(C_CIPHERTEXT2)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH));
+    end loop;
 
     report ("Done checking");
     sl_data_check_done <= '1';

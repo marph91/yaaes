@@ -82,11 +82,23 @@ def create_test_suite(ui):
         for gen in [gen1, gen2, gen3]:
             ciphertext1, iv2 = encrypt(gen["C_PLAINTEXT1"], gen["C_KEY1"], gen["C_IV1"], mode)
             ciphertext2, _ = encrypt(gen["C_PLAINTEXT2"], gen["C_KEY2"], iv2, mode)
-            gen.update({"C_MODE": mode,
+            gen.update({"C_BITWIDTH": 128,
+                        "C_MODE": mode,
                         "C_CIPHERTEXT1": ciphertext1,
                         "C_IV2": iv2,
                         "C_CIPHERTEXT2": ciphertext2})
             tb_aes.add_config(name="mode=%s,input=%s" % (mode, gen.pop("input")), generics=gen)
+    
+        # add one test for 8 bit bitwidth
+        bw = 8
+        ciphertext1, iv2 = encrypt(gen["C_PLAINTEXT1"], gen["C_KEY1"], gen["C_IV1"], mode)
+        ciphertext2, _ = encrypt(gen["C_PLAINTEXT2"], gen["C_KEY2"], iv2, mode)
+        gen.update({"C_BITWIDTH": bw,
+                    "C_MODE": mode,
+                    "C_CIPHERTEXT1": ciphertext1,
+                    "C_IV2": iv2,
+                    "C_CIPHERTEXT2": ciphertext2})
+        tb_aes.add_config(name="mode=%s,bitwidth=%d" % (mode, bw), generics=gen)
 
 
 if __name__ == "__main__":
