@@ -4,6 +4,7 @@ library ieee;
 
 library work;
   use work.aes_pkg.all;
+  use work.vunit_common_pkg.all;
 
 library vunit_lib;
   context vunit_lib.vunit_context;
@@ -55,13 +56,7 @@ begin
     osl_valid => sl_valid_out
   );
   
-  clk_proc : process
-	begin
-		sl_clk <= '1';
-		wait for C_CLK_PERIOD / 2;
-		sl_clk <= '0';
-		wait for C_CLK_PERIOD / 2;
-  end process;
+  clk_gen(sl_clk, C_CLK_PERIOD);
   
   main : process
     procedure run_test is

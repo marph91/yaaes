@@ -14,6 +14,7 @@ def create_test_suite(ui):
     lib = ui.add_library("lib", allow_duplicate=True)
     lib.add_source_files("/home/workspace/vhdl/aes/src/*.vhd")
     lib.add_source_files(os.path.join(root, "src", "*.vhd"))
+    lib.add_source_files(os.path.join(root, "..", "vunit_common_pkg.vhd"))
 
     tb_input_conversion = lib.entity("tb_input_conversion")
 
