@@ -20,8 +20,8 @@ end entity output_conversion;
 
 architecture rtl of output_conversion is
   -- TODO: enable bitwidth /= 128, i. e. 8, 16, 32
-  signal int_row : integer range 0 to 3 := 0;
-  signal int_col : integer range 0 to 3 := 0;
+  signal int_row : integer range 0 to C_STATE_ROWS-1 := 0;
+  signal int_col : integer range 0 to C_STATE_COLS-1 := 0;
   signal sl_output_valid,
          sl_output_valid_d1 : std_logic := '0';
 begin

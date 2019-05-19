@@ -76,6 +76,11 @@ begin
     osl_valid => osl_valid
   );
   
+  assert C_BITWIDTH = 8 or
+         C_BITWIDTH = 16 or
+         C_BITWIDTH = 32 or
+         C_BITWIDTH = 128 report "unsupported bitwidth " & integer'IMAGE(C_BITWIDTH) severity failure;
+  
   gen_encryption : if C_ENCRYPTION = '1' generate
     gen_ecb : if C_MODE = "ECB" generate
       a_data_cipher_in <= a_data_conv;

@@ -25,8 +25,8 @@ end entity input_conversion;
 architecture rtl of input_conversion is
   -- TODO: enable bitwidth /= 128, i. e. 8, 16, 32
   -- row first on purpose
-  signal int_row : integer range 0 to 3 := 0;
-  signal int_col : integer range 0 to 3 := 0;
+  signal int_row : integer range 0 to C_STATE_ROWS-1 := 0;
+  signal int_col : integer range 0 to C_STATE_COLS-1 := 0;
   signal sl_output_valid : std_logic := '0';
 begin
   gen_8 : if C_BITWIDTH = 8 generate
