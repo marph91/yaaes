@@ -90,8 +90,8 @@ begin
   end process;
 
   data_check_proc : process
-    variable input_byte : std_logic_vector(7 downto 0);
-    variable input_byte_ref : std_logic_vector(7 downto 0);
+    variable slv_input_byte : std_logic_vector(7 downto 0);
+    variable slv_input_byte_ref : std_logic_vector(7 downto 0);
   begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_data_check_done <= '0';
@@ -101,9 +101,9 @@ begin
         for row in 0 to C_STATE_ROWS-1 loop
           wait until rising_edge(sl_clk) and sl_valid_out = '1';
 
-          input_byte := slv_data_out(C_BITWIDTH-1 downto 0);
-          input_byte_ref := std_logic_vector(a_data_ref(row, col));
-          CHECK_EQUAL(input_byte, input_byte_ref);
+          slv_input_byte := slv_data_out(C_BITWIDTH-1 downto 0);
+          slv_input_byte_ref := std_logic_vector(a_data_ref(row, col));
+          CHECK_EQUAL(slv_input_byte, slv_input_byte_ref);
         end loop;
       end loop;
     else
@@ -111,9 +111,9 @@ begin
 
       for col in 0 to C_STATE_COLS-1 loop
         for row in 0 to C_STATE_ROWS-1 loop
-          input_byte := slv_data_out((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8);
-          input_byte_ref := std_logic_vector(a_data_ref(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
-          CHECK_EQUAL(input_byte, input_byte_ref);
+          slv_input_byte := slv_data_out((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8);
+          slv_input_byte_ref := std_logic_vector(a_data_ref(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
+          CHECK_EQUAL(slv_input_byte, slv_input_byte_ref);
         end loop;
       end loop;
     end if;
