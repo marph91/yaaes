@@ -30,7 +30,6 @@ architecture rtl of aes is
   signal a_key_conv,
          a_data_conv,
          a_iv_conv,
-         a_next_iv,
          a_data_cipher_in,
          a_data_cipher_out,
          a_key_cipher_in,
@@ -94,9 +93,8 @@ begin
     end generate;
 
     gen_cfb : if C_MODE = "CFB" generate
-      a_data_cipher_in <= a_next_iv when sl_chain = '1' else a_iv_conv;
+      a_data_cipher_in <= a_data_out when sl_chain = '1' else a_iv_conv;
       a_key_cipher_in <= a_key_conv;
-      a_next_iv <= xor_array(a_data_cipher_out, a_data_conv);
       a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;
     end generate;

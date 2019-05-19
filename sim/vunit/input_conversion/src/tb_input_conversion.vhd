@@ -19,7 +19,6 @@ architecture rtl of tb_input_conversion is
   constant C_CLK_PERIOD : time := 10 ns;
 
   signal sl_clk : std_logic := '0';
-  signal sl_valid_in : std_logic := '0';
 
   signal slv_iv_in,
          slv_key_in,
@@ -27,7 +26,8 @@ architecture rtl of tb_input_conversion is
   signal a_iv_out,
          a_key_out,
          a_data_out : t_state;
-  signal sl_valid_out : std_logic;
+  signal sl_valid_in,
+         sl_valid_out : std_logic;
 
   signal a_data_ref : t_state := ((x"00", x"04", x"08", x"0C"),
                                   (x"01", x"05", x"09", x"0D"),
