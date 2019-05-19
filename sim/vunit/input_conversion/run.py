@@ -2,10 +2,6 @@
 
 """Generate test vectors and a test suite for the AES VHDL design."""
 
-from Crypto.Cipher import AES
-from binascii import a2b_hex, b2a_hex
-import random
-
 import os
 
 from vunit import VUnit
