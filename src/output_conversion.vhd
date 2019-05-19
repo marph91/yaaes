@@ -22,12 +22,20 @@ architecture rtl of output_conversion is
   -- TODO: enable bitwidth /= 128, i. e. 8, 16, 32
   signal int_row : integer range 0 to 3 := 0;
   signal int_col : integer range 0 to 3 := 0;
+  signal sl_output_valid,
+         sl_output_valid_d1 : std_logic := '0';
 begin
   gen_8 : if C_BITWIDTH = 8 generate
     process (isl_clk)
     begin
       if rising_edge(isl_clk) then
+        sl_output_valid_d1 <= sl_output_valid;
+
         if isl_valid = '1' then
+          sl_output_valid <= '1';
+        end if;
+        
+        if sl_output_valid = '1' then
           oslv_data <= std_logic_vector(ia_data(int_row, int_col));
 
           if int_row < 3 then
@@ -38,13 +46,14 @@ begin
               int_col <= int_col+1;
             else
               int_col <= 0;
+              sl_output_valid <= '0';
             end if;
           end if;
         end if;
       end if;
     end process;
 
-    osl_valid <= '1' when int_row = 3 else '0';
+    osl_valid <= sl_output_valid_d1;
   end generate;
 
   gen_128 : if C_BITWIDTH = 128 generate
