@@ -21,10 +21,12 @@ architecture rtl of tb_input_conversion is
   signal sl_clk : std_logic := '0';
   signal sl_valid_in : std_logic := '0';
 
-  signal slv_data_in : std_logic_vector(C_BITWIDTH-1 downto 0);
-  signal slv_key_in : std_logic_vector(C_BITWIDTH-1 downto 0);
-  signal a_key_out : t_state;
-  signal a_data_out : t_state;
+  signal slv_iv_in,
+         slv_key_in,
+         slv_data_in : std_logic_vector(C_BITWIDTH-1 downto 0);
+  signal a_iv_out,
+         a_key_out,
+         a_data_out : t_state;
   signal sl_valid_out : std_logic;
 
   signal a_data_ref : t_state := ((x"00", x"04", x"08", x"0C"),
@@ -46,6 +48,8 @@ begin
     isl_valid => sl_valid_in,
     islv_data => slv_data_in,
     islv_key  => slv_key_in,
+    islv_iv  => slv_iv_in,
+    oa_iv   => a_iv_out,
     oa_key   => a_key_out,
     oa_data => a_data_out,
     osl_valid => sl_valid_out
@@ -92,6 +96,7 @@ begin
         for row in 0 to 4 / (C_BITWIDTH / 8)-1 loop
           slv_data_in <= std_logic_vector(a_data_ref(row, col));
           slv_key_in <= std_logic_vector(a_data_ref(row, col));
+          slv_iv_in <= std_logic_vector(a_data_ref(row, col));
           wait until rising_edge(sl_clk);
         end loop;
       end loop;
@@ -100,6 +105,7 @@ begin
         for col in 0 to C_STATE_COLS-1 loop
           slv_data_in((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(a_data_ref(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
           slv_key_in((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(a_data_ref(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
+          slv_iv_in((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(a_data_ref(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
         end loop;
       end loop;
       wait until rising_edge(sl_clk);
@@ -119,6 +125,7 @@ begin
       for row in 0 to 4 / (C_BITWIDTH / 8)-1 loop
         CHECK_EQUAL(a_data_out(col, row), a_data_ref(col, row));
         CHECK_EQUAL(a_key_out(col, row), a_data_ref(col, row));
+        CHECK_EQUAL(a_iv_out(col, row), a_data_ref(col, row));
       end loop;
     end loop;
 

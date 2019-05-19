@@ -14,6 +14,8 @@ entity input_conversion is
     isl_valid       : in std_logic;
     islv_data       : in std_logic_vector(C_BITWIDTH-1 downto 0);
     islv_key        : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    islv_iv         : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    oa_iv           : out t_state;
     oa_key          : out t_state;
     oa_data         : out t_state;
     osl_valid       : out std_logic
@@ -34,6 +36,7 @@ begin
         if isl_valid = '1' then
           oa_data(int_row, int_col) <= unsigned(islv_data);
           oa_key(int_row, int_col) <= unsigned(islv_key);
+          oa_iv(int_row, int_col) <= unsigned(islv_iv);
 
           if int_row < 3 then
             int_row <= int_row+1;
@@ -60,6 +63,7 @@ begin
       gen_cols : for col in 0 to C_STATE_COLS-1 generate
         oa_data(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(islv_data((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
         oa_key(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(islv_key((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
+        oa_iv(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(islv_iv((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
       end generate;
     end generate;
   end generate;

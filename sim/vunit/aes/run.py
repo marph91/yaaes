@@ -80,6 +80,7 @@ def create_test_suite(ui):
                 "C_KEY2": random_hex(32)}
         
         for gen in [gen1, gen2, gen3]:
+            # TODO: python byteorder is LSB...MSB, VHDL is MSB downto LSB
             ciphertext1, iv2 = encrypt(gen["C_PLAINTEXT1"], gen["C_KEY1"], gen["C_IV1"], mode)
             ciphertext2, _ = encrypt(gen["C_PLAINTEXT2"], gen["C_KEY2"], iv2, mode)
             gen.update({"C_BITWIDTH": 128,

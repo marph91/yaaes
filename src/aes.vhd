@@ -25,17 +25,16 @@ end entity aes;
 architecture rtl of aes is
   -- TODO: use record for cipher related signals
   signal sl_valid_conv,
-         sl_valid_cipher,
-         sl_valid_out : std_logic := '0';
-  signal slv_data_in,
-         slv_key_in,
-         slv_data_out : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
+         sl_valid_cipher_out : std_logic := '0';
+  signal slv_data_out : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
   signal a_key_conv,
          a_data_conv,
-         a_data_cipher,
+         a_iv_conv,
+         a_next_iv,
+         a_data_cipher_in,
+         a_data_cipher_out,
+         a_key_cipher_in,
          a_data_out : t_state := (others => (others => (others => '0')));
-  
-  signal slv_next_iv : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
   
   signal sl_chain : std_logic := '0';
 
@@ -47,8 +46,10 @@ begin
   port map(
     isl_clk   => isl_clk,
     isl_valid => isl_valid,
-    islv_data => slv_data_in,
-    islv_key  => slv_key_in,
+    islv_data => islv_plaintext,
+    islv_key  => islv_key,
+    islv_iv   => islv_iv,
+    oa_iv     => a_iv_conv,
     oa_key    => a_key_conv,
     oa_data   => a_data_conv,
     osl_valid => sl_valid_conv
@@ -58,10 +59,10 @@ begin
   port map(
     isl_clk   => isl_clk,
     isl_valid => sl_valid_conv,
-    ia_data   => a_data_conv,
-    ia_key    => a_key_conv,
-    oa_data   => a_data_cipher,
-    osl_valid => sl_valid_cipher
+    ia_data   => a_data_cipher_in,
+    ia_key    => a_key_cipher_in,
+    oa_data   => a_data_cipher_out,
+    osl_valid => sl_valid_cipher_out
   );
 
   i_output_conversion : entity work.output_conversion
@@ -70,37 +71,41 @@ begin
   )
   port map(
     isl_clk   => isl_clk,
-    isl_valid => sl_valid_cipher,
-    ia_data   => a_data_cipher,
+    isl_valid => sl_valid_cipher_out,
+    ia_data   => a_data_out,
     oslv_data => slv_data_out,
     osl_valid => osl_valid
   );
   
   gen_encryption : if C_ENCRYPTION = '1' generate
     gen_ecb : if C_MODE = "ECB" generate
-      slv_data_in <= islv_plaintext;
-      slv_key_in <= islv_key;
+      a_data_cipher_in <= a_data_conv;
+      a_key_cipher_in <= a_key_conv;
+      a_data_out <= a_data_cipher_out;
       oslv_ciphertext <= slv_data_out;
     end generate;
 
     gen_cbc : if C_MODE = "CBC" generate
-      slv_data_in <= slv_data_out xor islv_plaintext when sl_chain = '1'
-                     else islv_iv xor islv_plaintext;
-      slv_key_in <= islv_key;
+      a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_chain = '1'
+                          else xor_array(a_iv_conv, a_data_conv);
+      a_key_cipher_in <= a_key_conv;
+      a_data_out <= a_data_cipher_out;
       oslv_ciphertext <= slv_data_out;
     end generate;
 
     gen_cfb : if C_MODE = "CFB" generate
-      slv_data_in <= slv_next_iv when sl_chain = '1' else islv_iv;
-      slv_key_in <= islv_key;
-      slv_next_iv <= slv_data_out xor islv_plaintext;
-      oslv_ciphertext <= slv_data_out xor islv_plaintext;
+      a_data_cipher_in <= a_next_iv when sl_chain = '1' else a_iv_conv;
+      a_key_cipher_in <= a_key_conv;
+      a_next_iv <= xor_array(a_data_cipher_out, a_data_conv);
+      a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_ciphertext <= slv_data_out;
     end generate;
 
     gen_ofb : if C_MODE = "OFB" generate
-      slv_data_in <= slv_data_out when sl_chain = '1' else islv_iv;
-      slv_key_in <= islv_key;
-      oslv_ciphertext <= slv_data_out xor islv_plaintext;
+      a_data_cipher_in <= a_data_cipher_out when sl_chain = '1' else a_iv_conv;
+      a_key_cipher_in <= a_key_conv;
+      a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_ciphertext <= slv_data_out;
     end generate;
 
     gen_ctr : if C_MODE = "OFB" generate
