@@ -20,6 +20,9 @@ package aes_pkg is
 
   function xor_array(a, b : t_state) return t_state;
   function shift_array(arr : t_state) return t_state;
+
+  procedure slv_to_array(signal vec : in std_logic_vector(127 downto 0);
+                         signal arr : out t_state);
 end package aes_pkg;
 
 package body aes_pkg is
@@ -88,4 +91,15 @@ package body aes_pkg is
       end loop;
       return arr_shifted;
     end shift_array;
+
+    -- convert a std_logic_vector to an array
+    procedure slv_to_array(signal vec : in std_logic_vector(127 downto 0);
+                           signal arr : out t_state) is
+    begin
+      for row in arr'RANGE(1) loop
+        for col in arr'RANGE(2) loop
+          arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
+        end loop;
+      end loop;
+    end procedure slv_to_array;
 end package body;
