@@ -93,27 +93,7 @@ begin
   );
   
   clk_gen(sl_clk, C_CLK_PERIOD);
-  
-  main : process
-    procedure run_test is
-    begin
-      wait until rising_edge(sl_clk);
-      sl_start <= '1';
-      wait until rising_edge(sl_clk);
-      sl_start <= '0';
-      wait until rising_edge(sl_clk);
-
-      wait until rising_edge(sl_clk) and
-                 sl_stimuli_done = '1' and
-                 sl_data_check_done = '1';
-    end procedure;
-
-  begin
-    test_runner_setup(runner, runner_cfg);
-    run_test;
-    test_runner_cleanup(runner);
-    wait;
-  end process;
+  main(sl_start, sl_clk, sl_stimuli_done, sl_data_check_done, runner, runner_cfg);
 
   stimuli_proc : process
   begin

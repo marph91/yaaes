@@ -34,6 +34,7 @@ begin
     begin
       if rising_edge(isl_clk) then
         if isl_valid = '1' then
+          -- TODO: use shift register
           oa_data(int_row, int_col) <= unsigned(islv_data);
           oa_key(int_row, int_col) <= unsigned(islv_key);
           oa_iv(int_row, int_col) <= unsigned(islv_iv);
