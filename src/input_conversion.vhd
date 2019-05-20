@@ -34,7 +34,7 @@ begin
     begin
       if rising_edge(isl_clk) then
         if isl_valid = '1' then
-          -- TODO: use shift register -> it doesn't get recognized by synthesizer yet
+          -- TODO: is this shift register recognized correctly?
           oa_data <= shift_array(oa_data);
           oa_key <= shift_array(oa_key);
           oa_iv <= shift_array(oa_iv);
