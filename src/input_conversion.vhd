@@ -34,10 +34,14 @@ begin
     begin
       if rising_edge(isl_clk) then
         if isl_valid = '1' then
-          -- TODO: use shift register
-          oa_data(int_row, int_col) <= unsigned(islv_data);
-          oa_key(int_row, int_col) <= unsigned(islv_key);
-          oa_iv(int_row, int_col) <= unsigned(islv_iv);
+          -- TODO: use shift register -> it doesn't get recognized by synthesizer yet
+          oa_data <= shift_array(oa_data);
+          oa_key <= shift_array(oa_key);
+          oa_iv <= shift_array(oa_iv);
+
+          oa_data(3, 3) <= unsigned(islv_data);
+          oa_key(3, 3) <= unsigned(islv_key);
+          oa_iv(3, 3) <= unsigned(islv_iv);
 
           if int_row < 3 then
             int_row <= int_row+1;

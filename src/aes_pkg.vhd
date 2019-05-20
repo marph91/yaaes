@@ -19,6 +19,7 @@ package aes_pkg is
   function triple(value : unsigned(7 downto 0)) return unsigned;
 
   function xor_array(a, b : t_state) return t_state;
+  function shift_array(arr : t_state) return t_state;
 end package aes_pkg;
 
 package body aes_pkg is
@@ -71,4 +72,20 @@ package body aes_pkg is
       end loop;
       return c;
     end xor_array;
+
+    -- shift every value in an array by one byte "down"
+    function shift_array(arr : t_state) return t_state is
+      variable arr_shifted : t_state;
+      variable shifted_row,
+               shifted_col : integer;
+    begin
+      for row in arr'RANGE(1) loop
+        for col in arr'RANGE(2) loop
+          shifted_row := (row-1) mod C_STATE_ROWS;
+          shifted_col := col when (row-1) >= 0 else (col-1) mod C_STATE_COLS;
+          arr_shifted(shifted_row, shifted_col) := arr(row, col);
+        end loop;
+      end loop;
+      return arr_shifted;
+    end shift_array;
 end package body;

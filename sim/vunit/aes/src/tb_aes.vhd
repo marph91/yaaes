@@ -110,6 +110,8 @@ begin
 
     sl_valid_in <= '0';
     wait until rising_edge(sl_clk) and sl_valid_out = '1';
+    wait until rising_edge(sl_clk) and sl_valid_out = '0';
+    -- next input can be started only after the output is fully done
 
     sl_valid_in <= '1';
     for i in 128/C_BITWIDTH-1 downto 0 loop

@@ -43,7 +43,7 @@ begin
     ia_data => a_key_in,
     oa_data => a_key_out
   );
-  
+
   clk_gen(sl_clk, C_CLK_PERIOD);
   main(sl_start, sl_clk, sl_stimuli_done, sl_data_check_done, runner, runner_cfg);
 
