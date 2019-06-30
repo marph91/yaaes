@@ -13,7 +13,7 @@ To run the testbenches, simply execute `sim/vunit/run_all.py`.
 
 # TODO
 
-[ ] Add usage and documentation at least for the interface.
-[ ] Add utilization and timing on some FPGA.
-[ ] Implement missing encryption modes.
-[ ] Implement decryption.
+- Add usage and documentation at least for the interface.
+- Add utilization and timing on some FPGA.
+- Implement missing encryption modes.
+- Implement decryption.
