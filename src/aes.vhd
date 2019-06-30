@@ -77,7 +77,6 @@ begin
   );
   
   assert C_BITWIDTH = 8 or
-         C_BITWIDTH = 16 or
          C_BITWIDTH = 32 or
          C_BITWIDTH = 128 report "unsupported bitwidth " & integer'IMAGE(C_BITWIDTH) severity failure;
   
