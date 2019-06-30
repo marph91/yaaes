@@ -20,7 +20,7 @@ def create_test_suite(ui):
 
     for bw in [8, 32, 128]:
         gen = {"C_BITWIDTH": bw}
-        tb_input_conversion.add_config(name="bitwidth=%d" % bw, generics=gen)
+        tb_input_conversion.add_config(name="bw=%d" % bw, generics=gen)
 
 
 if __name__ == "__main__":
