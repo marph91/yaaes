@@ -23,50 +23,44 @@ entity input_conversion is
 end entity input_conversion;
 
 architecture rtl of input_conversion is
-  -- TODO: enable bitwidth /= 128, i. e. 8, 16, 32
-  -- row first on purpose
-  signal int_row : integer range 0 to C_STATE_ROWS-1 := 0;
+  signal int_row : integer range 0 to C_STATE_ROWS := 0;
   signal int_col : integer range 0 to C_STATE_COLS-1 := 0;
   signal sl_output_valid : std_logic := '0';
+
+  signal slv_data,
+         slv_key,
+         slv_iv : std_logic_vector(127 downto 0);
 begin
-  gen_8 : if C_BITWIDTH = 8 generate
-    process (isl_clk)
-    begin
-      if rising_edge(isl_clk) then
-        if isl_valid = '1' then
-          -- TODO: is this shift register recognized correctly?
-          oa_data <= shift_array(oa_data);
-          oa_key <= shift_array(oa_key);
-          oa_iv <= shift_array(oa_iv);
+  process (isl_clk)
+  begin
+    if rising_edge(isl_clk) then
+      if isl_valid = '1' then
+        slv_data <= slv_data(slv_data'HIGH-C_BITWIDTH downto slv_data'LOW) & islv_data;
+        slv_key <= slv_key(slv_key'HIGH-C_BITWIDTH downto slv_key'LOW) & islv_key;
+        slv_iv <= slv_iv(slv_iv'HIGH-C_BITWIDTH downto slv_iv'LOW) & islv_iv;
 
-          oa_data(3, 3) <= unsigned(islv_data);
-          oa_key(3, 3) <= unsigned(islv_key);
-          oa_iv(3, 3) <= unsigned(islv_iv);
-
-          if int_row < 3 then
-            int_row <= int_row+1;
+        if int_row < 3 and C_BITWIDTH = 8 then
+          int_row <= int_row+1;
+        else
+          int_row <= 0;
+          if int_col < 3 and C_BITWIDTH /= 128 then
+            int_col <= int_col+1;
           else
-            int_row <= 0;
-            if int_col < 3 then
-              int_col <= int_col+1;
-            else
-              int_col <= 0;
-            end if;
+            int_col <= 0;
+            sl_output_valid <= '1';
           end if;
         end if;
-
-        sl_output_valid <= '1' when (int_col = 3 and int_row = 3) else '0';
       end if;
-    end process;
 
-    osl_valid <= sl_output_valid;
-  end generate;
+      if sl_output_valid = '1' then
+        sl_output_valid <= '0';
+      end if;
+    end if;
+  end process;
 
-  gen_128 : if C_BITWIDTH = 128 generate
-    slv_to_array(islv_data, oa_data);
-    slv_to_array(islv_key, oa_key);
-    slv_to_array(islv_iv, oa_iv);
+  slv_to_array(slv_data, oa_data);
+  slv_to_array(slv_key, oa_key);
+  slv_to_array(slv_iv, oa_iv);
 
-    osl_valid <= isl_valid;
-  end generate;
+  osl_valid <= sl_output_valid;
 end architecture rtl;

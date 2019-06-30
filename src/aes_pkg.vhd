@@ -23,6 +23,8 @@ package aes_pkg is
 
   procedure slv_to_array(signal vec : in std_logic_vector(127 downto 0);
                          signal arr : out t_state);
+  procedure array_to_slv(signal arr : in t_state;
+                         signal vec : out std_logic_vector(127 downto 0));
 end package aes_pkg;
 
 package body aes_pkg is
@@ -102,4 +104,15 @@ package body aes_pkg is
         end loop;
       end loop;
     end procedure slv_to_array;
+
+    -- convert an array to a std_logic_vector
+    procedure array_to_slv(signal arr : in t_state;
+                           signal vec : out std_logic_vector(127 downto 0)) is
+    begin
+      for row in arr'RANGE(1) loop
+        for col in arr'RANGE(2) loop
+          vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
+        end loop;
+      end loop;
+    end procedure array_to_slv;
 end package body;

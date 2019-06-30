@@ -30,6 +30,7 @@ architecture rtl of tb_output_conversion is
                                   (x"01", x"05", x"09", x"0D"),
                                   (x"02", x"06", x"0A", x"0E"),
                                   (x"03", x"07", x"0B", x"0F"));
+  signal slv_data_ref : std_logic_vector(127 downto 0);
 
   signal sl_start,
          sl_data_check_done,
@@ -65,33 +66,23 @@ begin
   end process;
 
   data_check_proc : process
-    variable slv_input_byte : std_logic_vector(7 downto 0);
-    variable slv_input_byte_ref : std_logic_vector(7 downto 0);
+    variable slv_input_byte : std_logic_vector(C_BITWIDTH-1 downto 0);
+    variable slv_input_byte_ref : std_logic_vector(C_BITWIDTH-1 downto 0);
   begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_data_check_done <= '0';
 
-    if C_BITWIDTH = 8 then
-      for col in 0 to C_STATE_COLS-1 loop
-        for row in 0 to C_STATE_ROWS-1 loop
-          wait until rising_edge(sl_clk) and sl_valid_out = '1';
-
-          slv_input_byte := slv_data_out(C_BITWIDTH-1 downto 0);
-          slv_input_byte_ref := std_logic_vector(a_data_ref(row, col));
-          CHECK_EQUAL(slv_input_byte, slv_input_byte_ref);
-        end loop;
-      end loop;
-    else
+    array_to_slv(a_data_ref, slv_data_ref);
+    for i in 0 to 128 / C_BITWIDTH - 1 loop
       wait until rising_edge(sl_clk) and sl_valid_out = '1';
 
-      for col in 0 to C_STATE_COLS-1 loop
-        for row in 0 to C_STATE_ROWS-1 loop
-          slv_input_byte := slv_data_out((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8);
-          slv_input_byte_ref := std_logic_vector(a_data_ref(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
-          CHECK_EQUAL(slv_input_byte, slv_input_byte_ref);
-        end loop;
-      end loop;
-    end if;
+      slv_input_byte := slv_data_out(C_BITWIDTH-1 downto 0);
+      slv_input_byte_ref := slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH+1);
+      CHECK_EQUAL(slv_input_byte, slv_input_byte_ref);
+
+      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH downto slv_data_ref'LOW)
+                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH+1);
+    end loop;
 
     wait until rising_edge(sl_clk);
     CHECK_EQUAL(sl_valid_out, '0');
