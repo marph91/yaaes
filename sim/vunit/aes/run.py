@@ -2,12 +2,12 @@
 
 """Generate test vectors and a test suite for the AES VHDL design."""
 
-from Crypto.Cipher import AES
-from binascii import a2b_hex, b2a_hex
-import random
 
+from binascii import a2b_hex
+import random
 import os
 
+from Crypto.Cipher import AES
 from vunit import VUnit
 
 
@@ -79,23 +79,27 @@ def create_test_suite(ui):
                 "C_IV1": random_hex(32),
                 "C_PLAINTEXT2": random_hex(32),
                 "C_KEY2": random_hex(32)}
-        
+
         bw = 128
         for gen in [gen1, gen2, gen3]:
             # TODO: python byteorder is LSB...MSB, VHDL is MSB downto LSB
-            ciphertext1, iv2 = encrypt(gen["C_PLAINTEXT1"], gen["C_KEY1"], gen["C_IV1"], mode)
-            ciphertext2, _ = encrypt(gen["C_PLAINTEXT2"], gen["C_KEY2"], iv2, mode)
+            ciphertext1, iv2 = encrypt(
+                gen["C_PLAINTEXT1"], gen["C_KEY1"], gen["C_IV1"], mode)
+            ciphertext2, _ = encrypt(
+                gen["C_PLAINTEXT2"], gen["C_KEY2"], iv2, mode)
             gen.update({"C_BITWIDTH": bw,
                         "C_MODE": mode,
                         "C_CIPHERTEXT1": ciphertext1,
                         "C_IV2": iv2,
                         "C_CIPHERTEXT2": ciphertext2})
-            tb_aes.add_config(name="mode=%s,bw=%d,input=%s" % (mode, bw, gen.pop("input")), generics=gen)
-    
-        # add one test for 8 bit bitwidth. use the stimuli and references from gen3
+            tb_aes.add_config(
+                name="mode=%s,bw=%d,input=%s" % (mode, bw, gen.pop("input")),
+                generics=gen)
+
+        # Add test for 8 bit bitwidth. Use stimuli and references from gen3.
         bw = 8
-        gen.update({"C_BITWIDTH": bw})
-        tb_aes.add_config(name="mode=%s,bw=%d" % (mode, bw), generics=gen)
+        gen3.update({"C_BITWIDTH": bw})
+        tb_aes.add_config(name="mode=%s,bw=%d" % (mode, bw), generics=gen3)
 
 
 if __name__ == "__main__":
