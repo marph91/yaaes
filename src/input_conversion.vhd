@@ -13,6 +13,7 @@ entity input_conversion is
     isl_clk         : in std_logic;
     isl_valid       : in std_logic;
     islv_data       : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    isl_chain       : in std_logic;
     islv_key        : in std_logic_vector(C_BITWIDTH-1 downto 0);
     islv_iv         : in std_logic_vector(C_BITWIDTH-1 downto 0);
     oa_iv           : out t_state;
@@ -36,8 +37,10 @@ begin
     if rising_edge(isl_clk) then
       if isl_valid = '1' then
         slv_data <= slv_data(slv_data'HIGH-C_BITWIDTH downto slv_data'LOW) & islv_data;
-        slv_key <= slv_key(slv_key'HIGH-C_BITWIDTH downto slv_key'LOW) & islv_key;
-        slv_iv <= slv_iv(slv_iv'HIGH-C_BITWIDTH downto slv_iv'LOW) & islv_iv;
+        if isl_chain = '0' then
+          slv_key <= slv_key(slv_key'HIGH-C_BITWIDTH downto slv_key'LOW) & islv_key;
+          slv_iv <= slv_iv(slv_iv'HIGH-C_BITWIDTH downto slv_iv'LOW) & islv_iv;
+        end if;
 
         if int_row < 3 and C_BITWIDTH = 8 then
           int_row <= int_row+1;

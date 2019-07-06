@@ -16,13 +16,11 @@ entity tb_aes is
     C_BITWIDTH    : integer;
     C_MODE        : string;
     C_PLAINTEXT1  : string;
-    C_KEY1        : string;
-    C_IV1         : string;
     C_CIPHERTEXT1 : string;
     C_PLAINTEXT2  : string;
-    C_KEY2        : string;
-    C_IV2         : string;
-    C_CIPHERTEXT2 : string
+    C_CIPHERTEXT2 : string;
+    C_KEY         : string;
+    C_IV          : string
   );
 end entity tb_aes;
 
@@ -31,6 +29,7 @@ architecture rtl of tb_aes is
 
   signal sl_clk : std_logic := '0';
   signal sl_valid_in : std_logic := '0';
+  signal sl_new_key_in : std_logic := '0';
 
   signal slv_data_in : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
   signal slv_key_in : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
@@ -88,6 +87,7 @@ begin
     isl_clk   => sl_clk,
     isl_valid => sl_valid_in,
     islv_plaintext => slv_data_in,
+    isl_new_key => sl_new_key_in,
     islv_key  => slv_key_in,
     islv_iv   => slv_iv_in,
     oslv_ciphertext => slv_data_out,
@@ -103,13 +103,15 @@ begin
     sl_stimuli_done <= '0';
 
     sl_valid_in <= '1';
+    sl_new_key_in <= '1';
     for i in 128/C_BITWIDTH-1 downto 0 loop
       slv_data_in <= hex_to_slv(C_PLAINTEXT1)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
-      slv_key_in <= hex_to_slv(C_KEY1)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
-      slv_iv_in <= hex_to_slv(C_IV1)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      slv_key_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      slv_iv_in <= hex_to_slv(C_IV)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
       wait until rising_edge(sl_clk);
     end loop;
 
+    sl_new_key_in <= '0';
     sl_valid_in <= '0';
     wait until rising_edge(sl_clk) and sl_valid_out = '1';
     wait until rising_edge(sl_clk) and sl_valid_out = '0';
@@ -118,8 +120,7 @@ begin
     sl_valid_in <= '1';
     for i in 128/C_BITWIDTH-1 downto 0 loop
       slv_data_in <= hex_to_slv(C_PLAINTEXT2)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
-      slv_key_in <= hex_to_slv(C_KEY2)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
-      slv_iv_in <= hex_to_slv(C_IV2)((i+1)*C_BITWIDTH-1 downto i*C_BITWIDTH);
+      -- no new key and iv needed
       wait until rising_edge(sl_clk);
     end loop;
 

@@ -15,6 +15,7 @@ entity aes is
     isl_clk         : in std_logic;
     isl_valid       : in std_logic;
     islv_plaintext  : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    isl_new_key     : in std_logic;
     islv_key        : in std_logic_vector(C_BITWIDTH-1 downto 0);
     islv_iv         : in std_logic_vector(C_BITWIDTH-1 downto 0);
     oslv_ciphertext : out std_logic_vector(C_BITWIDTH-1 downto 0);
@@ -46,6 +47,7 @@ begin
     isl_clk   => isl_clk,
     isl_valid => isl_valid,
     islv_data => islv_plaintext,
+    isl_chain  => sl_chain,
     islv_key  => islv_key,
     islv_iv   => islv_iv,
     oa_iv     => a_iv_conv,
@@ -80,6 +82,18 @@ begin
          C_BITWIDTH = 32 or
          C_BITWIDTH = 128 report "unsupported bitwidth " & integer'IMAGE(C_BITWIDTH) severity failure;
   
+  proc_chain : process(isl_clk)
+  begin
+    if rising_edge(isl_clk) then
+      if isl_new_key = '1' then
+        sl_chain <= '0';
+      end if;
+      if sl_valid_conv = '1' then
+        sl_chain <= '1';
+      end if;
+    end if;
+  end process proc_chain;
+  
   gen_encryption : if C_ENCRYPTION = 1 generate
     gen_ecb : if C_MODE = "ECB" generate
       a_data_cipher_in <= a_data_conv;
@@ -97,7 +111,16 @@ begin
     end generate;
 
     gen_cfb : if C_MODE = "CFB" generate
-      a_data_cipher_in <= a_data_out when sl_chain = '1' else a_iv_conv;
+      proc_cipher_in : process(isl_clk)
+      begin
+        -- save the cipher input, because it gets modified as soon as there
+        -- is new input (a_data_conv)
+        if sl_valid_cipher_out = '1' and sl_chain = '1' then
+          a_data_cipher_in <= a_data_out;
+        elsif sl_chain = '0' then
+          a_data_cipher_in <= a_iv_conv;
+        end if;
+      end process;
       a_key_cipher_in <= a_key_conv;
       a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;
@@ -120,7 +143,16 @@ begin
     gen_cfb : if C_MODE = "CFB" generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
-      a_data_cipher_in <= a_data_conv when sl_chain = '1' else a_iv_conv;
+      proc_cipher_in : process(isl_clk)
+      begin
+        -- save the cipher input, because it gets modified as soon as there
+        -- is new input (a_data_conv)
+        if sl_valid_cipher_out = '1' and sl_chain = '1' then
+          a_data_cipher_in <= a_data_conv;
+        elsif sl_chain = '0' then
+          a_data_cipher_in <= a_iv_conv;
+        end if;
+      end process;
       a_key_cipher_in <= a_key_conv;
       a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;

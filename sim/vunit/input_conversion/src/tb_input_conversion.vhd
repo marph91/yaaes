@@ -29,6 +29,8 @@ architecture rtl of tb_input_conversion is
          a_data_out : t_state;
   signal sl_valid_in,
          sl_valid_out : std_logic;
+  -- TODO: test sl_chain = '1'
+  signal sl_chain : std_logic := '0';
 
   signal a_data_ref : t_state := ((x"00", x"04", x"08", x"0C"),
                                   (x"01", x"05", x"09", x"0D"),
@@ -49,6 +51,7 @@ begin
     isl_clk   => sl_clk,
     isl_valid => sl_valid_in,
     islv_data => slv_data_in,
+    isl_chain => sl_chain,
     islv_key  => slv_key_in,
     islv_iv  => slv_iv_in,
     oa_iv   => a_iv_out,

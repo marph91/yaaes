@@ -86,40 +86,44 @@ def create_test_suite(ui):
             if not encryption and mode in ["ECB", "CBC"]:
                 continue  # not yet implemented
             # TODO: allow more variability, e. g. varying segment_size for CFB
-            gen1 = {"input": "same",
-                    "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
-                    "C_KEY1": "2b7e151628aed2a6abf7158809cf4f3c",
-                    "C_IV1": random_hex(32),
-                    "C_PLAINTEXT2": "3243f6a8885a308d313198a2e0370734",
-                    "C_KEY2": "2b7e151628aed2a6abf7158809cf4f3c",
-                    "C_ENCRYPTION": encryption}
-            gen2 = {"input": "different",
-                    "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
-                    "C_KEY1": "2b7e151628aed2a6abf7158809cf4f3c",
-                    "C_IV1": random_hex(32),
-                    "C_PLAINTEXT2": "000102030405060708090a0b0c0d0e0f",
-                    "C_KEY2": "69c4e0d86a7b0430d8cdb78070b4c55a",
-                    "C_ENCRYPTION": encryption}
-            gen3 = {"input": "random",
-                    "C_PLAINTEXT1": random_hex(32),
-                    "C_KEY1": random_hex(32),
-                    "C_IV1": random_hex(32),
-                    "C_PLAINTEXT2": random_hex(32),
-                    "C_KEY2": random_hex(32),
-                    "C_ENCRYPTION": encryption}
+            gen1 = {
+                "input": "same",
+                "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
+                "C_PLAINTEXT2": "3243f6a8885a308d313198a2e0370734",
+                "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
+                "C_IV": random_hex(32),
+                "C_ENCRYPTION": encryption,
+                }
+            gen2 = {
+                "input": "different",
+                "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
+                "C_PLAINTEXT2": "000102030405060708090a0b0c0d0e0f",
+                "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
+                "C_IV": random_hex(32),
+                "C_ENCRYPTION": encryption,
+                }
+            gen3 = {
+                "input": "random",
+                "C_PLAINTEXT1": random_hex(32),
+                "C_PLAINTEXT2": random_hex(32),
+                "C_KEY": random_hex(32),
+                "C_IV": random_hex(32),
+                "C_ENCRYPTION": encryption,
+                }
 
             bw = 128
             for gen in [gen1, gen2, gen3]:
                 # TODO: python byteorder is LSB...MSB, VHDL is MSB downto LSB
                 ciphertext1, iv2 = encr_func(
-                    gen["C_PLAINTEXT1"], gen["C_KEY1"], gen["C_IV1"], mode)
+                    gen["C_PLAINTEXT1"], gen["C_KEY"], gen["C_IV"], mode)
                 ciphertext2, _ = encr_func(
-                    gen["C_PLAINTEXT2"], gen["C_KEY2"], iv2, mode)
-                gen.update({"C_BITWIDTH": bw,
-                            "C_MODE": mode,
-                            "C_CIPHERTEXT1": ciphertext1,
-                            "C_IV2": iv2,
-                            "C_CIPHERTEXT2": ciphertext2})
+                    gen["C_PLAINTEXT2"], gen["C_KEY"], iv2, mode)
+                gen.update({
+                    "C_BITWIDTH": bw,
+                    "C_MODE": mode,
+                    "C_CIPHERTEXT1": ciphertext1,
+                    "C_CIPHERTEXT2": ciphertext2,
+                    })
                 tb_aes.add_config(
                     name="%s,mode=%s,bw=%d,input=%s" % (encr_str, mode, bw,
                                                         gen.pop("input")),
