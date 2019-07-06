@@ -12,6 +12,7 @@ library vunit_lib;
 entity tb_aes is
   generic (
     runner_cfg    : string;
+    C_ENCRYPTION  : integer;
     C_BITWIDTH    : integer;
     C_MODE        : string;
     C_PLAINTEXT1  : string;
@@ -80,6 +81,7 @@ begin
   dut_aes: entity work.aes
   generic map (
     C_BITWIDTH => C_BITWIDTH,
+    C_ENCRYPTION => C_ENCRYPTION,
     C_MODE => C_MODE
   )
 	port map (

@@ -8,7 +8,7 @@ library work;
 entity aes is
   generic (
     C_MODE : string := "ECB";
-    C_ENCRYPTION : std_logic := '1';
+    C_ENCRYPTION : integer range 0 to 1 := 1;
     C_BITWIDTH : integer range 8 to 128 := 8
   );
   port (
@@ -80,7 +80,7 @@ begin
          C_BITWIDTH = 32 or
          C_BITWIDTH = 128 report "unsupported bitwidth " & integer'IMAGE(C_BITWIDTH) severity failure;
   
-  gen_encryption : if C_ENCRYPTION = '1' generate
+  gen_encryption : if C_ENCRYPTION = 1 generate
     gen_ecb : if C_MODE = "ECB" generate
       a_data_cipher_in <= a_data_conv;
       a_key_cipher_in <= a_key_conv;
@@ -115,7 +115,24 @@ begin
     end generate;
   end generate;
 
-  gen_decryption : if C_ENCRYPTION = '0' generate
+  gen_decryption : if C_ENCRYPTION = 0 generate
     -- TODO: add decryption, respectively inverse cipher, as described in: "NIST FIPS 197, 5.3 Inverse Cipher"
+    gen_cfb : if C_MODE = "CFB" generate
+      -- ciphertext -> plaintext
+      -- plaintext -> ciphertext
+      a_data_cipher_in <= a_data_conv when sl_chain = '1' else a_iv_conv;
+      a_key_cipher_in <= a_key_conv;
+      a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_ciphertext <= slv_data_out;
+    end generate;
+
+    gen_ofb : if C_MODE = "OFB" generate
+      -- ciphertext -> plaintext
+      -- plaintext -> ciphertext
+      a_data_cipher_in <= a_data_cipher_out when sl_chain = '1' else a_iv_conv;
+      a_key_cipher_in <= a_key_conv;
+      a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_ciphertext <= slv_data_out;
+    end generate;
   end generate;
 end architecture rtl;
