@@ -50,15 +50,8 @@ begin
   begin
     if rising_edge(isl_clk) then
       -- start new round when new input came or when the last round is finished
-      slv_stage(1) <= isl_valid or slv_stage(6);
+      slv_stage(1) <= isl_valid or (slv_stage(6) and not sl_last_round);
       slv_stage(2 to 6) <= slv_stage(1 to 5);
-      slv_stage(6) <= slv_stage(5) and not sl_last_round;
-
-      -- keep last round and valid signal only high for one cycle
-      if sl_last_round = '1' then
-        sl_last_round <= '0';
-      end if;
-      sl_valid_out <= sl_last_round;
 
       -- initial add key
       if isl_valid = '1' then
@@ -84,13 +77,6 @@ begin
             a_data_srows(row, new_col) <= a_data_sbox(row, col);
           end loop;
         end loop;
-
-        -- if round 9 is finished, skip the mix columns step
-        if int_round_cnt < 9 then
-          int_round_cnt <= int_round_cnt + 1;
-        else
-          sl_last_round <= '1';
-        end if;
       end if;
 
       -- mix columns
@@ -113,18 +99,28 @@ begin
                                   a_data_srows(2, col) xor
                                   double(a_data_srows(3, col));
         end loop;
+
+        -- if round 9 is finished, mix columns step could be skipped,
+        -- but like this, the pipeline doesn't branch
+        if int_round_cnt < 9 then
+          int_round_cnt <= int_round_cnt + 1;
+        else
+          sl_last_round <= '1';
+        end if;
       end if;
 
-      -- TODO: merge the following two steps
       -- add key
       if slv_stage(6) = '1' then
-        a_data_added <= xor_array(a_round_keys, a_data_mcols);
+        if sl_last_round = '0' then
+          a_data_added <= xor_array(a_round_keys, a_data_mcols);
+        else
+          -- final add key
+          a_data_added <= xor_array(a_round_keys, a_data_srows);
+          sl_last_round <= '0';
+        end if;
       end if;
 
-      -- final add key
-      if sl_last_round = '1' then
-        a_data_added <= xor_array(a_round_keys, a_data_srows);
-      end if;
+      sl_valid_out <= sl_last_round;
     end if;
   end process;
 
