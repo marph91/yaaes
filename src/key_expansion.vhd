@@ -18,6 +18,7 @@ entity key_exp is
 end entity key_exp;
 
 architecture rtl of key_exp is
+  -- pipeline with 2 stages -> 1 stage doesn't work with 250 MHz
   signal slv_stage : std_logic_vector(1 to 2) := (others => '0');
   signal a_sub_word,
          a_rcon : t_word := (others => (others => '0'));

@@ -53,6 +53,7 @@ begin
   begin
     if rising_edge(isl_clk) then
       -- start new round when new input came or when the last round is finished
+      -- pipeline has to be 3 stages, because key expansion isn't ready earlier (timing would be fine)
       slv_stage(1) <= isl_valid or sl_next_round;
       slv_stage(2 to 3) <= slv_stage(1 to 2);
 

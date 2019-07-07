@@ -15,10 +15,10 @@ Currently supported:
 128 bit encryption in ECB mode:
 
 - simulation results:
-  - latency: 94 cycles (f. e. 940 ns at 100 MHz clock)
+  - latency: 34 cycles (f. e. 340 ns at 100 MHz clock)
 - synthesis results for Zynq 7010:
-  - 1252 LUT, 1291 FF
-  - 0.392 ns worst negative slack at 250 MHz (not fully sure if the constraints are correct)
+  - 1265 LUT, 1125 FF
+  - 0.330 ns worst negative slack at 250 MHz (not fully sure if the constraints are correct)
 
 # Requirements for running the testbenches
 
