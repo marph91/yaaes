@@ -2,11 +2,11 @@ Currently supported:
 
 | Mode | Encryption | Decryption | Bitwidth (In & Out) |
 | :---: | :---: | :---: | :---: |
-| ECB | &#x2611; | &#x274C; | 8, 32 and 128 |
-| CBC | &#x2611; | &#x274C; | 8, 32 and 128 |
+| ECB | &#x2611; | &#x274E; | 8, 32 and 128 |
+| CBC | &#x2611; | &#x274E; | 8, 32 and 128 |
 | CFB | &#x2611; | &#x2611; | 8, 32 and 128 |
 | OFB | &#x2611; | &#x2611; | 8, 32 and 128 |
-| CTR | &#x274C; | &#x274C; | - |
+| CTR | &#x274E; | &#x274E; | - |
 
 # Example stats
 
