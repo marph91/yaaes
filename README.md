@@ -1,3 +1,5 @@
+VHDL implementation of the symmetric block cipher AES, as specified in the NIST document FIPS 197.
+
 Currently supported:
 
 | Mode | Encryption | Decryption | Bitwidth (In & Out) |
@@ -8,14 +10,15 @@ Currently supported:
 | OFB | &#x2611; | &#x2611; | 8, 32 and 128 |
 | CTR | &#x274E; | &#x274E; | - |
 
-# Example stats
+# Example results
 
 128 bit encryption in ECB mode:
-- 940 ns at 100 MHz clock
-- 1252 LUT, 1291 FF on Zynq 7010
 
-[//]: # (- 0.392 ns worst negative slack at 250 MHz
-           TODO: check if the constraints are set correctly)
+- simulation results:
+  - latency: 94 cycles (f. e. 940 ns at 100 MHz clock)
+- synthesis results for Zynq 7010:
+  - 1252 LUT, 1291 FF
+  - 0.392 ns worst negative slack at 250 MHz (not fully sure if the constraints are correct)
 
 # Requirements for running the testbenches
 
