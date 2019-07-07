@@ -41,41 +41,6 @@ architecture rtl of tb_aes is
          sl_data_check_done,
          sl_stimuli_done : std_logic := '0';
 
-  function hex_to_slv(str_i : string) return std_logic_vector is
-    variable v_hex : std_logic_vector(3 downto 0) := (others => '0');
-    variable v_slv : std_logic_vector(str_i'LENGTH*4 - 1 downto 0) := (others => '0');
-  begin
-    for i in str_i'RANGE loop
-      case str_i(str_i'LENGTH - i+1) is
-        when '0' => v_hex := x"0";
-        when '1' => v_hex := x"1";
-        when '2' => v_hex := x"2";
-        when '3' => v_hex := x"3";
-        when '4' => v_hex := x"4";
-        when '5' => v_hex := x"5";
-        when '6' => v_hex := x"6";
-        when '7' => v_hex := x"7";
-        when '8' => v_hex := x"8";
-        when '9' => v_hex := x"9";
-        when 'a' => v_hex := x"a";
-        when 'A' => v_hex := x"a";
-        when 'b' => v_hex := x"b";
-        when 'B' => v_hex := x"b";
-        when 'c' => v_hex := x"c";
-        when 'C' => v_hex := x"c";
-        when 'd' => v_hex := x"d";
-        when 'D' => v_hex := x"d";
-        when 'e' => v_hex := x"e";
-        when 'E' => v_hex := x"e";
-        when 'f' => v_hex := x"f";
-        when 'F' => v_hex := x"f";
-        when others => report "hexstr_to_slv: illegal char" severity ERROR;
-      end case;
-      v_slv(i*4-1 downto 0 + (i-1)*4) := v_hex;
-    end loop;
-    return v_slv;
-  end function hex_to_slv;
-
 begin
   dut_aes: entity work.aes
   generic map (
