@@ -47,7 +47,7 @@ begin
     isl_clk   => isl_clk,
     isl_valid => isl_valid,
     islv_data => islv_plaintext,
-    isl_chain  => sl_chain,
+    isl_chain => sl_chain,
     islv_key  => islv_key,
     islv_iv   => islv_iv,
     oa_iv     => a_iv_conv,
