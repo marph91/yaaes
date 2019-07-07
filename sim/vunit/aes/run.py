@@ -4,16 +4,12 @@
 
 
 from binascii import a2b_hex
-import random
 import os
 
 from Crypto.Cipher import AES
 from vunit import VUnit
 
-
-def random_hex(bw):
-    """Generate a random hex string."""
-    return "{0:0{1}x}".format(random.randrange(16**bw), bw)
+import common
 
 
 def xor(str1, str2):
@@ -91,7 +87,7 @@ def create_test_suite(ui):
                 "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
                 "C_PLAINTEXT2": "3243f6a8885a308d313198a2e0370734",
                 "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
-                "C_IV": random_hex(32),
+                "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
                 }
             gen2 = {
@@ -99,15 +95,15 @@ def create_test_suite(ui):
                 "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
                 "C_PLAINTEXT2": "000102030405060708090a0b0c0d0e0f",
                 "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
-                "C_IV": random_hex(32),
+                "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
                 }
             gen3 = {
                 "input": "random",
-                "C_PLAINTEXT1": random_hex(32),
-                "C_PLAINTEXT2": random_hex(32),
-                "C_KEY": random_hex(32),
-                "C_IV": random_hex(32),
+                "C_PLAINTEXT1": common.random_hex(32),
+                "C_PLAINTEXT2": common.random_hex(32),
+                "C_KEY": common.random_hex(32),
+                "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
                 }
 
