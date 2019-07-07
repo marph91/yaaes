@@ -18,7 +18,7 @@ entity key_exp is
 end entity key_exp;
 
 architecture rtl of key_exp is
-  signal slv_stage : std_logic_vector(1 to 7) := (others => '0');
+  signal slv_stage : std_logic_vector(1 to 4) := (others => '0');
   signal a_sub_word,
          a_rot_word,
          a_rcon_word,
@@ -26,6 +26,7 @@ architecture rtl of key_exp is
   signal a_data_out : t_state := (others => (others => (others => '0')));
 begin
   process(isl_clk)
+  variable v_data_out : t_state;
   begin
     if rising_edge(isl_clk) then
       slv_stage <= (isl_valid or isl_next_key) & slv_stage(slv_stage'LOW to slv_stage'HIGH-1);
@@ -63,26 +64,13 @@ begin
       -- xor last word
       if slv_stage(4) = '1' then
         for row in a_rot_word'RANGE loop
-          a_data_out(row, 0) <= a_data_out(row, 0) xor a_rcon_word(row);
-        end loop;
-      end if;
+          v_data_out(row, 0) := a_data_out(row, 0) xor a_rcon_word(row);
+          -- assign the following three words -> no sub, rot, ... needed
+          v_data_out(row, 1) := v_data_out(row, 0) xor a_data_out(row, 1);
+          v_data_out(row, 2) := v_data_out(row, 1) xor a_data_out(row, 2);
+          v_data_out(row, 3) := v_data_out(row, 2) xor a_data_out(row, 3);
 
-      -- assign the following three words -> no sub, rot, ... needed
-      if slv_stage(5) = '1' then
-        for row in a_rot_word'RANGE loop
-          a_data_out(row, 1) <= a_data_out(row, 0) xor a_data_out(row, 1);
-        end loop;
-      end if;
-
-      if slv_stage(6) = '1' then
-        for row in a_rot_word'RANGE loop
-          a_data_out(row, 2) <= a_data_out(row, 1) xor a_data_out(row, 2);
-        end loop;
-      end if;
-
-      if slv_stage(7) = '1' then
-        for row in a_rot_word'RANGE loop
-          a_data_out(row, 3) <= a_data_out(row, 2) xor a_data_out(row, 3);
+          a_data_out <= v_data_out;
         end loop;
       end if;
     end if;

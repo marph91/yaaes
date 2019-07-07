@@ -20,7 +20,7 @@ end entity cipher;
 
 architecture rtl of cipher is
   -- states
-  signal slv_stage : std_logic_vector(1 to 9) := (others => '0');
+  signal slv_stage : std_logic_vector(1 to 6) := (others => '0');
   signal sl_valid_out : std_logic := '0';
   signal sl_last_round : std_logic := '0';
 
@@ -39,7 +39,7 @@ begin
   i_key_exp : entity work.key_exp
   port map(
     isl_clk       => isl_clk,
-    isl_next_key  => slv_stage(9),
+    isl_next_key  => slv_stage(6),
     isl_valid     => isl_valid,
     ia_data       => ia_key,
     oa_data       => a_round_keys
@@ -50,9 +50,9 @@ begin
   begin
     if rising_edge(isl_clk) then
       -- start new round when new input came or when the last round is finished
-      slv_stage(1) <= isl_valid or slv_stage(9);
-      slv_stage(2 to 8) <= slv_stage(1 to 7);
-      slv_stage(9) <= slv_stage(8) and not sl_last_round;
+      slv_stage(1) <= isl_valid or slv_stage(6);
+      slv_stage(2 to 6) <= slv_stage(1 to 5);
+      slv_stage(6) <= slv_stage(5) and not sl_last_round;
 
       -- keep last round and valid signal only high for one cycle
       if sl_last_round = '1' then
@@ -68,7 +68,7 @@ begin
       end if;
 
       -- substitute bytes
-      if slv_stage(6) = '1' then
+      if slv_stage(3) = '1' then
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
             a_data_sbox(row, col) <= C_SBOX(to_integer(a_data_added(row, col)));
@@ -77,7 +77,7 @@ begin
       end if;
 
       -- shift rows
-      if slv_stage(7) = '1' then
+      if slv_stage(4) = '1' then
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
             new_col := (col - row) mod C_STATE_COLS;
@@ -94,7 +94,7 @@ begin
       end if;
 
       -- mix columns
-      if slv_stage(8) = '1' then
+      if slv_stage(5) = '1' then
         for col in 0 to C_STATE_COLS-1 loop
           a_data_mcols(0, col) <= double(a_data_srows(0, col)) xor
                                   triple(a_data_srows(1, col)) xor
@@ -117,7 +117,7 @@ begin
 
       -- TODO: merge the following two steps
       -- add key
-      if slv_stage(9) = '1' then
+      if slv_stage(6) = '1' then
         a_data_added <= xor_array(a_round_keys, a_data_mcols);
       end if;
 
