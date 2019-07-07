@@ -1,4 +1,4 @@
-VHDL implementation of the symmetric block cipher AES, as specified in the NIST document FIPS 197.
+VHDL implementation of the symmetric block cipher AES, as specified in the NIST FIPS 197, respectively NIST SP 800-38A.
 
 Currently supported:
 
