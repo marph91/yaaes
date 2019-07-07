@@ -11,24 +11,24 @@ entity cipher is
   port (
     isl_clk   : in std_logic;
     isl_valid : in std_logic;
-    ia_data : in t_state;
-    ia_key  : in t_state;
-    oa_data : out t_state;
+    ia_data   : in t_state;
+    ia_key    : in t_state;
+    oa_data   : out t_state;
     osl_valid : out std_logic
   );
 end entity cipher;
 
 architecture rtl of cipher is
   -- states
-  signal slv_stage : std_logic_vector(1 to 6) := (others => '0');
+  signal slv_stage : std_logic_vector(1 to 3) := (others => '0');
   signal sl_valid_out : std_logic := '0';
-  signal sl_last_round : std_logic := '0';
+  signal sl_last_round,
+         sl_next_round : std_logic := '0';
 
   -- data container
   signal a_key_in,
          a_data_in,
          a_data_added,
-         a_data_sbox,
          a_data_srows,
          a_data_mcols : t_state := (others => (others => (others => '0')));
 
@@ -36,22 +36,25 @@ architecture rtl of cipher is
   signal a_round_keys : t_state;
   signal int_round_cnt : integer range 0 to 13 := 0;
 begin
+  sl_next_round <= slv_stage(3) and not sl_last_round;
+  
   i_key_exp : entity work.key_exp
   port map(
     isl_clk       => isl_clk,
-    isl_next_key  => slv_stage(6),
+    isl_next_key  => sl_next_round,
     isl_valid     => isl_valid,
     ia_data       => ia_key,
     oa_data       => a_round_keys
   );
 
   process(isl_clk)
-    variable new_col : integer range 0 to 3 := 0;
+    variable new_col : integer range 0 to 3;
+    variable v_data_sbox : t_state;
   begin
     if rising_edge(isl_clk) then
       -- start new round when new input came or when the last round is finished
-      slv_stage(1) <= isl_valid or (slv_stage(6) and not sl_last_round);
-      slv_stage(2 to 6) <= slv_stage(1 to 5);
+      slv_stage(1) <= isl_valid or sl_next_round;
+      slv_stage(2 to 3) <= slv_stage(1 to 2);
 
       -- initial add key
       if isl_valid = '1' then
@@ -60,27 +63,22 @@ begin
         a_data_added <= xor_array(ia_key, ia_data);
       end if;
 
-      -- substitute bytes
-      if slv_stage(3) = '1' then
+      -- substitute bytes and shift rows
+      if slv_stage(1) = '1' then
         for row in 0 to C_STATE_ROWS-1 loop
           for col in 0 to C_STATE_COLS-1 loop
-            a_data_sbox(row, col) <= C_SBOX(to_integer(a_data_added(row, col)));
-          end loop;
-        end loop;
-      end if;
+            -- substitute bytes
+            v_data_sbox(row, col) := C_SBOX(to_integer(a_data_added(row, col)));
 
-      -- shift rows
-      if slv_stage(4) = '1' then
-        for row in 0 to C_STATE_ROWS-1 loop
-          for col in 0 to C_STATE_COLS-1 loop
+            -- shift rows
             new_col := (col - row) mod C_STATE_COLS;
-            a_data_srows(row, new_col) <= a_data_sbox(row, col);
+            a_data_srows(row, new_col) <= v_data_sbox(row, col);
           end loop;
         end loop;
       end if;
 
       -- mix columns
-      if slv_stage(5) = '1' then
+      if slv_stage(2) = '1' then
         for col in 0 to C_STATE_COLS-1 loop
           a_data_mcols(0, col) <= double(a_data_srows(0, col)) xor
                                   triple(a_data_srows(1, col)) xor
@@ -110,7 +108,7 @@ begin
       end if;
 
       -- add key
-      if slv_stage(6) = '1' then
+      if slv_stage(3) = '1' then
         if sl_last_round = '0' then
           a_data_added <= xor_array(a_round_keys, a_data_mcols);
         else
