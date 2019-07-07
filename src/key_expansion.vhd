@@ -1,3 +1,5 @@
+-- key expansion module, as described in: "FIPS 197, 5.2 Key Expansion"
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -26,8 +28,6 @@ begin
   process(isl_clk)
   begin
     if rising_edge(isl_clk) then
-      -- key expansion, as described in: "FIPS 197, 5.2 Key Expansion"
-
       slv_stage <= (isl_valid or isl_next_key) & slv_stage(slv_stage'LOW to slv_stage'HIGH-1);
 
       -- first key is the input

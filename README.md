@@ -1,7 +1,20 @@
 Currently supported:
-- 8, 32 or 128 bit inputs and outputs.
-- In the algorithm always 128 bits are used.
-- AES-Encryption in the modes ECB, CBC, CFB and OFB.
+Mode | Encryption | Decryption | Bitwidth (In & Out)
+:---: | :---: | :---: | :---:
+ECB | &#x2611; | &#x2612; | 8, 32 and 128
+CBC | &#x2611; | &#x2612; | 8, 32 and 128
+CFB | &#x2611; | &#x2611; | 8, 32 and 128
+OFB | &#x2611; | &#x2611; | 8, 32 and 128
+CTR | &#x2612; | &#x2612; | -
+
+# Example stats
+
+128 bit encryption in ECB mode:
+- 940 ns at 100 MHz clock
+- 1252 LUT, 1291 FF on Zynq 7010
+
+[//]: # (- 0.392 ns worst negative slack at 250 MHz
+           TODO: check if the constraints are set correctly)
 
 # Requirements for running the testbenches
 
@@ -9,11 +22,11 @@ Currently supported:
 - VUnit: https://github.com/vunit/vunit
 - Pycryptodome: https://github.com/Legrandin/pycryptodome
 
-To run the testbenches, simply execute `sim/vunit/run_all.py`.
+To run the testbenches, simply execute `sim/vunit/run.py`.
 
 # TODO
 
 - Add usage and documentation at least for the interface.
 - Add utilization and timing on some FPGA.
 - Implement missing encryption modes.
-- Implement decryption.
+- Implement missing decryption modes.

@@ -1,3 +1,5 @@
+-- AES block cipher modes, as described in: "NIST SP 800-38A"
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;

@@ -1,3 +1,5 @@
+-- cipher module, as described in: "FIPS 197, 5.1 Cipher"
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -47,8 +49,6 @@ begin
     variable new_col : integer range 0 to 3 := 0;
   begin
     if rising_edge(isl_clk) then
-      -- cipher, as described in: "FIPS 197, 5.1 Cipher"
-
       -- start new round when new input came or when the last round is finished
       slv_stage(1) <= isl_valid or slv_stage(9);
       slv_stage(2 to 8) <= slv_stage(1 to 7);
