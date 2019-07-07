@@ -20,7 +20,7 @@ end entity cipher;
 
 architecture rtl of cipher is
   -- states
-  signal slv_stage : std_logic_vector(1 to 3) := (others => '0');
+  signal slv_stage : std_logic_vector(1 to 2) := (others => '0');
   signal sl_valid_out : std_logic := '0';
   signal sl_last_round,
          sl_next_round : std_logic := '0';
@@ -29,14 +29,13 @@ architecture rtl of cipher is
   signal a_key_in,
          a_data_in,
          a_data_added,
-         a_data_srows,
-         a_data_mcols : t_state := (others => (others => (others => '0')));
+         a_data_srows : t_state := (others => (others => (others => '0')));
 
   -- keys
   signal a_round_keys : t_state;
   signal int_round_cnt : integer range 0 to 13 := 0;
 begin
-  sl_next_round <= slv_stage(3) and not sl_last_round;
+  sl_next_round <= slv_stage(2) and not sl_last_round;
   
   i_key_exp : entity work.key_exp
   port map(
@@ -49,13 +48,11 @@ begin
 
   process(isl_clk)
     variable new_col : integer range 0 to 3;
-    variable v_data_sbox : t_state;
+    variable v_data_sbox,
+             v_data_mcols : t_state;
   begin
     if rising_edge(isl_clk) then
-      -- start new round when new input came or when the last round is finished
-      -- pipeline has to be 3 stages, because key expansion isn't ready earlier (timing would be fine)
-      slv_stage(1) <= isl_valid or sl_next_round;
-      slv_stage(2 to 3) <= slv_stage(1 to 2);
+      slv_stage <= (isl_valid or sl_next_round) & slv_stage(1);
 
       -- initial add key
       if isl_valid = '1' then
@@ -76,28 +73,6 @@ begin
             a_data_srows(row, new_col) <= v_data_sbox(row, col);
           end loop;
         end loop;
-      end if;
-
-      -- mix columns
-      if slv_stage(2) = '1' then
-        for col in 0 to C_STATE_COLS-1 loop
-          a_data_mcols(0, col) <= double(a_data_srows(0, col)) xor
-                                  triple(a_data_srows(1, col)) xor
-                                  a_data_srows(2, col) xor
-                                  a_data_srows(3, col);
-          a_data_mcols(1, col) <= a_data_srows(0, col) xor
-                                  double(a_data_srows(1, col)) xor
-                                  triple(a_data_srows(2, col)) xor
-                                  a_data_srows(3, col);
-          a_data_mcols(2, col) <= a_data_srows(0, col) xor
-                                  a_data_srows(1, col) xor
-                                  double(a_data_srows(2, col)) xor
-                                  triple(a_data_srows(3, col));
-          a_data_mcols(3, col) <= triple(a_data_srows(0, col)) xor
-                                  a_data_srows(1, col) xor
-                                  a_data_srows(2, col) xor
-                                  double(a_data_srows(3, col));
-        end loop;
 
         -- if round 9 is finished, mix columns step could be skipped,
         -- but like this, the pipeline doesn't branch
@@ -108,10 +83,30 @@ begin
         end if;
       end if;
 
-      -- add key
-      if slv_stage(3) = '1' then
+      -- mix columns and add key
+      if slv_stage(2) = '1' then
+        for col in 0 to C_STATE_COLS-1 loop
+          v_data_mcols(0, col) := double(a_data_srows(0, col)) xor
+                                  triple(a_data_srows(1, col)) xor
+                                  a_data_srows(2, col) xor
+                                  a_data_srows(3, col);
+          v_data_mcols(1, col) := a_data_srows(0, col) xor
+                                  double(a_data_srows(1, col)) xor
+                                  triple(a_data_srows(2, col)) xor
+                                  a_data_srows(3, col);
+          v_data_mcols(2, col) := a_data_srows(0, col) xor
+                                  a_data_srows(1, col) xor
+                                  double(a_data_srows(2, col)) xor
+                                  triple(a_data_srows(3, col));
+          v_data_mcols(3, col) := triple(a_data_srows(0, col)) xor
+                                  a_data_srows(1, col) xor
+                                  a_data_srows(2, col) xor
+                                  double(a_data_srows(3, col));
+        end loop;
+
+        -- add key
         if sl_last_round = '0' then
-          a_data_added <= xor_array(a_round_keys, a_data_mcols);
+          a_data_added <= xor_array(a_round_keys, v_data_mcols);
         else
           -- final add key
           a_data_added <= xor_array(a_round_keys, a_data_srows);

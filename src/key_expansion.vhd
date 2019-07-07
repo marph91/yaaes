@@ -18,19 +18,18 @@ entity key_exp is
 end entity key_exp;
 
 architecture rtl of key_exp is
-  -- pipeline with 2 stages -> 1 stage doesn't work with 250 MHz
-  signal slv_stage : std_logic_vector(1 to 2) := (others => '0');
-  signal a_sub_word,
-         a_rcon : t_word := (others => (others => '0'));
+  signal sl_process : std_logic := '0';
+  signal a_rcon : t_word := (others => (others => '0'));
   signal a_data_out : t_state := (others => (others => (others => '0')));
 begin
   process(isl_clk)
     variable v_data_out : t_state;
     variable v_rot_word,
+             v_sub_word,
              v_rcon_word : t_word;
   begin
     if rising_edge(isl_clk) then
-      slv_stage <= (isl_valid or isl_next_key) & slv_stage(slv_stage'LOW to slv_stage'HIGH-1);
+      sl_process <= isl_valid or isl_next_key;
 
       -- first key is the input
       if isl_valid = '1' then
@@ -38,8 +37,8 @@ begin
         a_data_out <= ia_data;
       end if;
 
-      -- rotate and substitute
-      if slv_stage(1) = '1' then
+      -- process all the steps
+      if sl_process = '1' then
         -- rotate
         for row in ia_data'RANGE loop
           v_rot_word((row-1) mod 4) := a_data_out(row, 3);
@@ -47,15 +46,12 @@ begin
 
         -- substitute
         for col in ia_data'RANGE loop
-          a_sub_word(col) <= C_SBOX(to_integer(v_rot_word(col)));
+          v_sub_word(col) := C_SBOX(to_integer(v_rot_word(col)));
         end loop;
-      end if;
 
-      -- xor rcon and last word
-      if slv_stage(2) = '1' then
         -- xor rcon
         for col in ia_data'RANGE loop
-          v_rcon_word(col) := a_sub_word(col) xor a_rcon(col);
+          v_rcon_word(col) := v_sub_word(col) xor a_rcon(col);
         end loop;
 
         -- calculate round constant for the next round, as defined in: "FIPS 197, 5.2 Key Expansion"
