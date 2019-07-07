@@ -1,3 +1,7 @@
+-- test whether the key expansion module works correctly
+-- input data -> key expansion -> output data
+-- output data == reference vectors?
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;

@@ -1,3 +1,7 @@
+-- test whether the output conversion module works correctly
+-- input data -> output conversion -> output data
+-- output data == reference data?
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;

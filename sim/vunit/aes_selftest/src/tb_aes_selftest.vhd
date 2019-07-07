@@ -1,3 +1,7 @@
+-- test whether the decryption and encryption modules work correctly together
+-- input data -> encryption -> decryption -> output data
+-- output data == input data?
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
@@ -36,7 +40,7 @@ architecture rtl of tb_aes_selftest is
     sl_valid_out : std_logic;
   end record t_module_inout;
   signal r_encrypt,
-         r_decrypt : t_module_inout := ('0', (others => '0'), '0', (others => '0'), (others => '0'), (others => '0'), '0');
+         r_decrypt : t_module_inout;
   signal slv_data_out_full : std_logic_vector(128-1 downto 0);
 
   signal sl_start,

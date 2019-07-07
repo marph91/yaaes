@@ -1,3 +1,7 @@
+-- test whether the decryption and encryption modules work correctly independently
+-- input data -> encryption/decryption -> output data
+-- output data == python reference data?
+
 library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
