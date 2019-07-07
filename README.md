@@ -1,4 +1,5 @@
 Currently supported:
+
 | Mode | Encryption | Decryption | Bitwidth (In & Out) |
 | :---: | :---: | :---: | :---: |
 | ECB | &#x2611; | &#x2612; | 8, 32 and 128 |
