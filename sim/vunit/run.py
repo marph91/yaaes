@@ -3,7 +3,7 @@
 """Run all unit tests contained by the subfolders."""
 
 from glob import glob
-import importlib
+import importlib.util
 import os
 
 from vunit import VUnit
