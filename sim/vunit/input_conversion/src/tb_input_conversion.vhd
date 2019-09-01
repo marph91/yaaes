@@ -72,7 +72,7 @@ begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_stimuli_done <= '0';
 
-    array_to_slv(a_data_ref, slv_data_ref);
+    slv_data_ref <= array_to_slv(a_data_ref);
     wait until rising_edge(sl_clk);
     sl_valid_in <= '1';
     for i in 0 to 128 / C_BITWIDTH - 1 loop

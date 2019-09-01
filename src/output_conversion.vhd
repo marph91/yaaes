@@ -37,7 +37,7 @@ begin
 
       if isl_valid = '1' then
         sl_output_valid <= '1';
-        array_to_slv(ia_data, slv_data);
+        slv_data <= array_to_slv(ia_data);
       end if;
       
       if sl_output_valid = '1' then

@@ -22,10 +22,8 @@ package aes_pkg is
   function xor_array(a, b : t_state) return t_state;
   function shift_array(arr : t_state) return t_state;
 
-  procedure slv_to_array(signal vec : in std_logic_vector(127 downto 0);
-                         signal arr : out t_state);
-  procedure array_to_slv(signal arr : in t_state;
-                         signal vec : out std_logic_vector(127 downto 0));
+  function slv_to_array(vec : std_logic_vector(127 downto 0)) return t_state;
+  function array_to_slv(arr : t_state) return std_logic_vector;
 end package aes_pkg;
 
 package body aes_pkg is
@@ -96,24 +94,26 @@ package body aes_pkg is
     end shift_array;
 
     -- convert a std_logic_vector to an array
-    procedure slv_to_array(signal vec : in std_logic_vector(127 downto 0);
-                           signal arr : out t_state) is
+    function slv_to_array(vec : std_logic_vector(127 downto 0)) return t_state is
+      variable arr : t_state;
     begin
       for row in arr'RANGE(1) loop
         for col in arr'RANGE(2) loop
-          arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) <= unsigned(vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
+          arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) := unsigned(vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
         end loop;
       end loop;
-    end procedure slv_to_array;
+      return arr;
+    end function slv_to_array;
 
     -- convert an array to a std_logic_vector
-    procedure array_to_slv(signal arr : in t_state;
-                           signal vec : out std_logic_vector(127 downto 0)) is
+    function array_to_slv(arr : t_state) return std_logic_vector is
+      variable vec : std_logic_vector(127 downto 0);
     begin
       for row in arr'RANGE(1) loop
         for col in arr'RANGE(2) loop
-          vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) <= std_logic_vector(arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
+          vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) := std_logic_vector(arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
         end loop;
       end loop;
-    end procedure array_to_slv;
+      return vec;
+    end function array_to_slv;
 end package body;

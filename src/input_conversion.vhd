@@ -61,9 +61,8 @@ begin
     end if;
   end process;
 
-  slv_to_array(slv_data, oa_data);
-  slv_to_array(slv_key, oa_key);
-  slv_to_array(slv_iv, oa_iv);
-
+  oa_data <= slv_to_array(slv_data);
+  oa_key <= slv_to_array(slv_key);
+  oa_iv <= slv_to_array(slv_iv);
   osl_valid <= sl_output_valid;
 end architecture rtl;
