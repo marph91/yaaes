@@ -18,7 +18,7 @@ entity tb_aes_selftest is
     runner_cfg    : string;
     C_ENCRYPTION  : integer;
     C_BITWIDTH    : integer;
-    C_MODE        : string;
+    C_MODE        : t_mode;
     C_PLAINTEXT1  : string;
     C_PLAINTEXT2  : string;
     C_KEY         : string;

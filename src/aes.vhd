@@ -9,7 +9,7 @@ library work;
 
 entity aes is
   generic (
-    C_MODE : string := "ECB";
+    C_MODE : t_mode := ECB;
     C_ENCRYPTION : integer range 0 to 1 := 1;
     C_BITWIDTH : integer range 8 to 128 := 8
   );
@@ -97,14 +97,14 @@ begin
   end process proc_chain;
   
   gen_encryption : if C_ENCRYPTION = 1 generate
-    gen_ecb : if C_MODE = "ECB" generate
+    gen_ecb : if C_MODE = ECB generate
       a_data_cipher_in <= a_data_conv;
       a_key_cipher_in <= a_key_conv;
       a_data_out <= a_data_cipher_out;
       oslv_ciphertext <= slv_data_out;
     end generate;
 
-    gen_cbc : if C_MODE = "CBC" generate
+    gen_cbc : if C_MODE = CBC generate
       a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_chain = '1'
                           else xor_array(a_iv_conv, a_data_conv);
       a_key_cipher_in <= a_key_conv;
@@ -112,7 +112,7 @@ begin
       oslv_ciphertext <= slv_data_out;
     end generate;
 
-    gen_cfb : if C_MODE = "CFB" generate
+    gen_cfb : if C_MODE = CFB generate
       proc_cipher_in : process(isl_clk)
       begin
         -- save the cipher input, because it gets modified as soon as there
@@ -128,21 +128,21 @@ begin
       oslv_ciphertext <= slv_data_out;
     end generate;
 
-    gen_ofb : if C_MODE = "OFB" generate
+    gen_ofb : if C_MODE = OFB generate
       a_data_cipher_in <= a_data_cipher_out when sl_chain = '1' else a_iv_conv;
       a_key_cipher_in <= a_key_conv;
       a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;
     end generate;
 
-    gen_ctr : if C_MODE = "OFB" generate
+    gen_ctr : if C_MODE = CTR generate
       -- TODO: add counter mode, as described in: "NIST SP 800-38A"
     end generate;
   end generate;
 
   gen_decryption : if C_ENCRYPTION = 0 generate
     -- TODO: add decryption, respectively inverse cipher, as described in: "NIST FIPS 197, 5.3 Inverse Cipher"
-    gen_cfb : if C_MODE = "CFB" generate
+    gen_cfb : if C_MODE = CFB generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
       proc_cipher_in : process(isl_clk)
@@ -160,7 +160,7 @@ begin
       oslv_ciphertext <= slv_data_out;
     end generate;
 
-    gen_ofb : if C_MODE = "OFB" generate
+    gen_ofb : if C_MODE = OFB generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
       a_data_cipher_in <= a_data_cipher_out when sl_chain = '1' else a_iv_conv;

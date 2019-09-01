@@ -1,5 +1,6 @@
 *.pdf
 *.gtkw
+*.pyc
 
 # vunit files
 **/vunit_out/

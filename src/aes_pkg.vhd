@@ -3,6 +3,7 @@ library ieee;
   use ieee.numeric_std.all;
 
 package aes_pkg is
+  type t_mode is (ECB, CBC, CFB, OFB, CTR);
   type t_usig_1d is array(natural range <>) of unsigned(7 downto 0);
   type t_usig_2d is array(natural range <>, natural range <>) of unsigned(7 downto 0);
 
