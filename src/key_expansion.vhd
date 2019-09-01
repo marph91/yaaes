@@ -7,7 +7,7 @@ library ieee;
 library work;
   use work.aes_pkg.all;
 
-entity key_exp is
+entity key_expansion is
   port (
     isl_clk       : in std_logic;
     isl_next_key  : in std_logic;
@@ -15,9 +15,9 @@ entity key_exp is
     ia_data       : in t_state;
     oa_data       : out t_state
   );
-end entity key_exp;
+end entity key_expansion;
 
-architecture rtl of key_exp is
+architecture rtl of key_expansion is
   signal sl_process : std_logic := '0';
   signal a_rcon : t_word := (others => (others => '0'));
   signal a_data_out : t_state := (others => (others => (others => '0')));

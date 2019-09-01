@@ -39,7 +39,7 @@ architecture rtl of tb_key_expansion is
          sl_stimuli_done : std_logic := '0';
 
 begin
-  dut_key_expansion: entity work.key_exp
+  dut_key_expansion: entity work.key_expansion
 	port map (
     isl_clk => sl_clk,
     isl_valid => sl_valid_in,

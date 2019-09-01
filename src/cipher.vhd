@@ -37,7 +37,7 @@ architecture rtl of cipher is
 begin
   sl_next_round <= slv_stage(2) and not sl_last_round;
   
-  i_key_exp : entity work.key_exp
+  i_key_expansion : entity work.key_expansion
   port map(
     isl_clk       => isl_clk,
     isl_next_key  => sl_next_round,
