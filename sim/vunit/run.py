@@ -3,7 +3,7 @@
 """Run all unit tests contained by the subfolders."""
 
 from glob import glob
-import imp
+import importlib
 import os
 
 from vunit import VUnit
@@ -14,10 +14,10 @@ def create_test_suites(prj):
     run_scripts = glob(os.path.join(root, "*", "run.py"))
 
     for run_script in run_scripts:
-        mod = imp.find_module("run", [os.path.dirname(run_script)])
-        run = imp.load_module("run", *mod)
-        run.create_test_suite(prj)
-        mod[0].close()
+        spec = importlib.util.spec_from_file_location("run", run_script)
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        mod.create_test_suite(prj)
 
 
 if __name__ == "__main__":
