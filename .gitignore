@@ -8,5 +8,6 @@
 # ghdl files
 build/
 
-# vivado files
+# vendor project files
 aes_vivado/
+lattice/
