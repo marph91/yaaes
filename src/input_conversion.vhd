@@ -24,7 +24,7 @@ entity input_conversion is
 end entity input_conversion;
 
 architecture rtl of input_conversion is
-  signal int_row : integer range 0 to C_STATE_ROWS := 0;
+  signal int_row : integer range 0 to C_STATE_ROWS-1 := 0;
   signal int_col : integer range 0 to C_STATE_COLS-1 := 0;
   signal sl_output_valid : std_logic := '0';
 
@@ -42,11 +42,11 @@ begin
           slv_iv <= slv_iv(slv_iv'HIGH-C_BITWIDTH downto slv_iv'LOW) & islv_iv;
         end if;
 
-        if int_row < 3 and C_BITWIDTH = 8 then
+        if int_row < C_STATE_ROWS-1 and C_BITWIDTH = 8 then
           int_row <= int_row+1;
         else
           int_row <= 0;
-          if int_col < 3 and C_BITWIDTH /= 128 then
+          if int_col < C_STATE_COLS-1 and C_BITWIDTH /= 128 then
             int_col <= int_col+1;
           else
             int_col <= 0;

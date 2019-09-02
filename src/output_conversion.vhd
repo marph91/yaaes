@@ -42,14 +42,15 @@ begin
       
       if sl_output_valid = '1' then
         oslv_data <= slv_data(slv_data'HIGH downto slv_data'HIGH-C_BITWIDTH+1);
-        slv_data <= slv_data(slv_data'HIGH-C_BITWIDTH downto slv_data'LOW) & slv_data(slv_data'HIGH downto slv_data'HIGH-C_BITWIDTH+1);
+        slv_data <= slv_data(slv_data'HIGH-C_BITWIDTH downto slv_data'LOW) &
+                    slv_data(slv_data'HIGH downto slv_data'HIGH-C_BITWIDTH+1);
 
         -- TODO: use rows/cols per input instead of C_BITWIDTH
-        if int_row < 3 and C_BITWIDTH = 8 then
+        if int_row < C_STATE_ROWS-1 and C_BITWIDTH = 8 then
           int_row <= int_row+1;
         else
           int_row <= 0;
-          if int_col < 3 and C_BITWIDTH /= 128 then
+          if int_col < C_STATE_COLS-1 and C_BITWIDTH /= 128 then
             int_col <= int_col+1;
           else
             int_col <= 0;
