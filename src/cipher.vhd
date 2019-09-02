@@ -47,7 +47,7 @@ begin
   );
 
   process(isl_clk)
-    variable new_col : integer range 0 to 3;
+    variable v_new_col : integer range 0 to C_STATE_COLS-1;
     variable v_data_sbox,
              v_data_mcols : t_state;
   begin
@@ -69,8 +69,9 @@ begin
             v_data_sbox(row, col) := C_SBOX(to_integer(a_data_added(row, col)));
 
             -- shift rows
-            new_col := (col - row) mod C_STATE_COLS;
-            a_data_srows(row, new_col) <= v_data_sbox(row, col);
+            -- avoid modulo by using unsigned overflow
+            v_new_col := to_integer(to_unsigned(col, 2) - row);
+            a_data_srows(row, v_new_col) <= v_data_sbox(row, col);
           end loop;
         end loop;
 

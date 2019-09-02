@@ -27,6 +27,7 @@ begin
     variable v_rot_word,
              v_sub_word,
              v_rcon_word : t_word;
+    variable v_new_row : integer range 0 to C_STATE_ROWS-1;
   begin
     if rising_edge(isl_clk) then
       sl_process <= isl_valid or isl_next_key;
@@ -41,7 +42,9 @@ begin
       if sl_process = '1' then
         -- rotate
         for row in ia_data'RANGE loop
-          v_rot_word((row-1) mod 4) := a_data_out(row, 3);
+          -- avoid modulo by using unsigned overflow
+          v_new_row := to_integer(to_unsigned(row, 2) - 1);
+          v_rot_word(v_new_row) := a_data_out(row, C_STATE_COLS-1);
         end loop;
 
         -- substitute

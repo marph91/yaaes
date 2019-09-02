@@ -1,0 +1,20 @@
+# Red leds
+#set_io oslv_data_bram[0] 99
+#set_io oslv_data_bram[1] 98
+#set_io oslv_data_bram[2] 97
+#set_io oslv_data_bram[3] 96
+
+# Green led
+set_io osl_cnt 95
+
+# IrDA
+set_io osl_ir 105
+set_io isl_ir 106
+set_io osl_ir_en 107 # SD: enable IrDA (low active)
+
+# FTDI Port B UART
+set_io osl_uart 8  # UART TX
+set_io isl_uart 9  # UART RX
+
+# 12 MHz clock
+set_io isl_clk 21

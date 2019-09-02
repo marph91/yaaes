@@ -1,0 +1,1 @@
+define_clock {p:isl_clk} -freq 12 -clockgroup default_clkgroup_0

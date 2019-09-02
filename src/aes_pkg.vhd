@@ -8,7 +8,7 @@ package aes_pkg is
   type t_usig_2d is array(natural range <>, natural range <>) of unsigned(7 downto 0);
 
   constant C_STATE_ROWS,
-           C_STATE_COLS : integer range 4 to 4 := 4;
+           C_STATE_COLS : integer := 4;
   
   subtype t_word is t_usig_1d(0 to C_STATE_COLS-1);
   subtype t_state is t_usig_2d(0 to C_STATE_ROWS-1, 0 to C_STATE_COLS-1);
