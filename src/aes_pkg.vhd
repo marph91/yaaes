@@ -20,7 +20,6 @@ package aes_pkg is
   function triple(value : unsigned(7 downto 0)) return unsigned;
 
   function xor_array(a, b : t_state) return t_state;
-  function shift_array(arr : t_state) return t_state;
 
   function slv_to_array(vec : std_logic_vector(127 downto 0)) return t_state;
   function array_to_slv(arr : t_state) return std_logic_vector;
@@ -76,22 +75,6 @@ package body aes_pkg is
       end loop;
       return c;
     end xor_array;
-
-    -- shift every value in an array by one byte "down"
-    function shift_array(arr : t_state) return t_state is
-      variable arr_shifted : t_state;
-      variable shifted_row,
-               shifted_col : integer range 0 to C_STATE_ROWS-1;
-    begin
-      for row in arr'RANGE(1) loop
-        for col in arr'RANGE(2) loop
-          shifted_row := (row-1) mod C_STATE_ROWS;
-          shifted_col := col when (row-1) >= 0 else (col-1) mod C_STATE_COLS;
-          arr_shifted(shifted_row, shifted_col) := arr(row, col);
-        end loop;
-      end loop;
-      return arr_shifted;
-    end shift_array;
 
     -- convert a std_logic_vector to an array
     function slv_to_array(vec : std_logic_vector(127 downto 0)) return t_state is
