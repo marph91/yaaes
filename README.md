@@ -32,9 +32,3 @@ Currently supported:
 - Pycryptodome: https://github.com/Legrandin/pycryptodome
 
 To run the testsuite, simply execute `cd sim/vunit/ && ./run.py`.
-
-## TODO
-
-- Add usage and documentation, at least for the interface.
-- Implement missing encryption and decryption modes.
-- Synthesize with open source toolchain.
