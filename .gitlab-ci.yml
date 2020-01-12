@@ -1,7 +1,0 @@
-image: ghdl/ext:ls-vunit
-
-VUnit:
-  script:
-    - pip install pycryptodome
-    - cd sim/vunit/
-    - ./run.py -p 4
