@@ -6,7 +6,7 @@
 from binascii import a2b_hex
 import os
 
-from Crypto.Cipher import AES
+from Cryptodome.Cipher import AES
 from vunit import VUnit
 
 import common
