@@ -1,0 +1,16 @@
+name: testsuite
+
+on: [push]
+
+jobs:
+  container:
+    runs-on: ubuntu-latest
+    container: ghdl/vunit:gcc-master
+    steps:
+      - uses: actions/checkout@v1
+      - name: Install dependencies
+        run: sudo apt-get install python3-pycryptodome
+      - name: Run tests
+        run: |
+          cd sim/vunit/
+          ./run.py
