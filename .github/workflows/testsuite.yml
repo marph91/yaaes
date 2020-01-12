@@ -9,7 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v1
       - name: Install dependencies
-        run: apt-get install python3-pycryptodome
+        run: |
+          apt-get update
+          apt-get install python3-pycryptodome
       - name: Run tests
         run: |
           cd sim/vunit/
