@@ -119,7 +119,7 @@ def create_test_suite(ui):
                     "C_CIPHERTEXT2": ciphertext2,
                     })
                 tb_aes.add_config(
-                    name="%s,mode=%s,bw=%d,input=%s" % (encr_str, mode, bw,
+                    name="%s_mode=%s_bw=%d_input=%s" % (encr_str, mode, bw,
                                                         gen.pop("input")),
                     generics=gen)
 
@@ -127,7 +127,7 @@ def create_test_suite(ui):
             # Use stimuli and references from gen3.
             for bw in [8, 32]:
                 gen3.update({"C_BITWIDTH": bw})
-                tb_aes.add_config(name="%s,mode=%s,bw=%d,input=random"
+                tb_aes.add_config(name="%s_mode=%s_bw=%d_input=random"
                                   % (encr_str, mode, bw), generics=gen3)
 
 

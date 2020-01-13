@@ -48,14 +48,14 @@ def create_test_suite(ui):
             gen.update({"C_BITWIDTH": bw,
                         "C_MODE": mode})
             tb_aes.add_config(
-                name="mode=%s,bw=%d,input=%s" % (mode, bw, gen.pop("input")),
+                name="mode=%s_bw=%d_input=%s" % (mode, bw, gen.pop("input")),
                 generics=gen)
 
         # Add test for 8 and 32 bit bitwidth.
         # Use stimuli and references from gen3.
         for bw in [8, 32]:
             gen3.update({"C_BITWIDTH": bw})
-            tb_aes.add_config(name="mode=%s,bw=%d,input=random"
+            tb_aes.add_config(name="mode=%s_bw=%d_input=random"
                               % (mode, bw), generics=gen3)
 
 
