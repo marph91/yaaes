@@ -2,9 +2,9 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-library work;
-  use work.aes_pkg.all;
-  use work.vunit_common_pkg.all;
+library aes_lib;
+  use aes_lib.aes_pkg.all;
+  use aes_lib.vunit_common_pkg.all;
 
 library vunit_lib;
   context vunit_lib.vunit_context;
@@ -37,7 +37,7 @@ architecture rtl of tb_output_conversion is
          sl_stimuli_done : std_logic := '0';
 
 begin
-  dut_output_conversion: entity work.output_conversion
+  dut_output_conversion: entity aes_lib.output_conversion
   generic map (
     C_BITWIDTH => C_BITWIDTH
   )

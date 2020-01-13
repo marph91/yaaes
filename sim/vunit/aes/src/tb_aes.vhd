@@ -6,9 +6,9 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-library work;
-  use work.aes_pkg.all;
-  use work.vunit_common_pkg.all;
+library aes_lib;
+  use aes_lib.aes_pkg.all;
+  use aes_lib.vunit_common_pkg.all;
 
 library vunit_lib;
   context vunit_lib.vunit_context;
@@ -46,7 +46,7 @@ architecture rtl of tb_aes is
          sl_stimuli_done : std_logic := '0';
 
 begin
-  dut_aes: entity work.aes
+  dut_aes: entity aes_lib.aes
   generic map (
     C_BITWIDTH => C_BITWIDTH,
     C_ENCRYPTION => C_ENCRYPTION,

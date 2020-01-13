@@ -4,8 +4,8 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-library work;
-  use work.aes_pkg.all;
+library aes_lib;
+  use aes_lib.aes_pkg.all;
 
 entity aes is
   generic (
@@ -41,7 +41,7 @@ architecture rtl of aes is
   signal sl_chain : std_logic := '0';
 
 begin
-  i_input_conversion : entity work.input_conversion
+  i_input_conversion : entity aes_lib.input_conversion
   generic map(
     C_BITWIDTH => C_BITWIDTH
   )
@@ -58,7 +58,7 @@ begin
     osl_valid => sl_valid_conv
   );
 
-  i_cipher : entity work.cipher
+  i_cipher : entity aes_lib.cipher
   port map(
     isl_clk   => isl_clk,
     isl_valid => sl_valid_conv,
@@ -68,7 +68,7 @@ begin
     osl_valid => sl_valid_cipher_out
   );
 
-  i_output_conversion : entity work.output_conversion
+  i_output_conversion : entity aes_lib.output_conversion
   generic map(
     C_BITWIDTH => C_BITWIDTH
   )

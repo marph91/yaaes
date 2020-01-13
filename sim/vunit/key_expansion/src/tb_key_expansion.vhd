@@ -6,9 +6,9 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-library work;
-  use work.aes_pkg.all;
-  use work.vunit_common_pkg.all;
+library aes_lib;
+  use aes_lib.aes_pkg.all;
+  use aes_lib.vunit_common_pkg.all;
 
 library vunit_lib;
   context vunit_lib.vunit_context;
@@ -39,7 +39,7 @@ architecture rtl of tb_key_expansion is
          sl_stimuli_done : std_logic := '0';
 
 begin
-  dut_key_expansion: entity work.key_expansion
+  dut_key_expansion: entity aes_lib.key_expansion
 	port map (
     isl_clk => sl_clk,
     isl_valid => sl_valid_in,

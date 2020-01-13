@@ -6,9 +6,9 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-library work;
-  use work.aes_pkg.all;
-  use work.vunit_common_pkg.all;
+library aes_lib;
+  use aes_lib.aes_pkg.all;
+  use aes_lib.vunit_common_pkg.all;
 
 library vunit_lib;
   context vunit_lib.vunit_context;
@@ -48,24 +48,24 @@ architecture rtl of tb_aes_selftest is
          sl_stimuli_done : std_logic := '0';
 
 begin
-  dut_aes_encrypt: entity work.aes
+  dut_aes_encrypt: entity aes_lib.aes
   generic map (
     C_BITWIDTH => C_BITWIDTH,
     C_ENCRYPTION => 1,
     C_MODE => C_MODE
   )
-	port map (
-    isl_clk   => sl_clk,
+  port map (
+    isl_clk=> sl_clk,
     isl_valid => r_encrypt.sl_valid_in,
     islv_plaintext => r_encrypt.slv_data_in,
     isl_new_key => r_encrypt.sl_new_key_in,
-    islv_key  => r_encrypt.slv_key_in,
-    islv_iv   => r_encrypt.slv_iv_in,
+    islv_key => r_encrypt.slv_key_in,
+    islv_iv => r_encrypt.slv_iv_in,
     oslv_ciphertext => r_encrypt.slv_data_out,
     osl_valid => r_encrypt.sl_valid_out
   );
 
-  dut_aes_decrypt: entity work.aes
+  dut_aes_decrypt: entity aes_lib.aes
   generic map (
     C_BITWIDTH => C_BITWIDTH,
     C_ENCRYPTION => 0,

@@ -4,8 +4,8 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-library work;
-  use work.aes_pkg.all;
+library aes_lib;
+  use aes_lib.aes_pkg.all;
 
 entity cipher is
   port (
@@ -37,7 +37,7 @@ architecture rtl of cipher is
 begin
   sl_next_round <= slv_stage(2) and not sl_last_round;
   
-  i_key_expansion : entity work.key_expansion
+  i_key_expansion : entity aes_lib.key_expansion
   port map(
     isl_clk       => isl_clk,
     isl_next_key  => sl_next_round,

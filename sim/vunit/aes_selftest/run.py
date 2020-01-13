@@ -14,11 +14,8 @@ def create_test_suite(ui):
     root = os.path.dirname(__file__)
 
     ui.add_array_util()
-    lib = ui.add_library("lib", allow_duplicate=True)
-    lib.add_source_files("../../src/*.vhd")
+    lib = ui.add_library("test_lib", allow_duplicate=True)
     lib.add_source_files(os.path.join(root, "src", "*.vhd"))
-    lib.add_source_files(os.path.join(root, "..", "vunit_common_pkg.vhd"))
-
     tb_aes = lib.entity("tb_aes_selftest")
 
     # simulate two rounds of en- and decrypting for each chaining mode

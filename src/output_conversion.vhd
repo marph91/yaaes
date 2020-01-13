@@ -6,8 +6,8 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-library work;
-  use work.aes_pkg.all;
+library aes_lib;
+  use aes_lib.aes_pkg.all;
 
 entity output_conversion is
   generic (
