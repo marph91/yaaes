@@ -50,7 +50,7 @@ architecture rtl of tb_aes_selftest is
 begin
   dut_aes_encrypt: entity aes_lib.aes
   generic map (
-    C_BITWIDTH => C_BITWIDTH,
+    C_BITWIDTH_IF => C_BITWIDTH,
     C_ENCRYPTION => 1,
     C_MODE => C_MODE
   )
@@ -67,7 +67,7 @@ begin
 
   dut_aes_decrypt: entity aes_lib.aes
   generic map (
-    C_BITWIDTH => C_BITWIDTH,
+    C_BITWIDTH_IF => C_BITWIDTH,
     C_ENCRYPTION => 0,
     C_MODE => C_MODE
   )

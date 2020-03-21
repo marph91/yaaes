@@ -16,7 +16,9 @@ library vunit_lib;
 entity tb_key_expansion is
   generic (
     runner_cfg    : string;
-    C_BITWIDTH    : integer
+    C_BITWIDTH    : integer;
+
+    C_KEY_WORDS    : integer := 4
   );
 end entity tb_key_expansion;
 
@@ -26,7 +28,7 @@ architecture rtl of tb_key_expansion is
   signal sl_clk : std_logic := '0';
   signal sl_valid_in,
          sl_next_key : std_logic := '0';
-  signal a_key_in : t_state := (others => (others => (others => '0')));
+  signal a_key_in : t_key(0 to C_KEY_WORDS-1) := (others => (others => (others => '0')));
   signal a_key_out : t_state;
 
   signal a_key_ref : t_state := ((x"d0", x"c9", x"e1", x"b6"),
@@ -40,6 +42,9 @@ architecture rtl of tb_key_expansion is
 
 begin
   dut_key_expansion: entity aes_lib.key_expansion
+  generic map(
+    C_KEY_WORDS => C_KEY_WORDS
+  )
 	port map (
     isl_clk => sl_clk,
     isl_valid => sl_valid_in,

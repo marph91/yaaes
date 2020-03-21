@@ -8,11 +8,14 @@ library aes_lib;
   use aes_lib.aes_pkg.all;
 
 entity key_expansion is
+  generic (
+    C_KEY_WORDS    : integer := 4
+  );
   port (
     isl_clk       : in std_logic;
     isl_next_key  : in std_logic;
     isl_valid     : in std_logic;
-    ia_data       : in t_state;
+    ia_data       : in t_key(0 to C_KEY_WORDS-1);
     oa_data       : out t_state
   );
 end entity key_expansion;
@@ -20,10 +23,10 @@ end entity key_expansion;
 architecture rtl of key_expansion is
   signal sl_process : std_logic := '0';
   signal a_rcon : t_word := (others => (others => '0'));
-  signal a_data_out : t_state := (others => (others => (others => '0')));
+  signal a_data_out : t_key(0 to C_KEY_WORDS-1) := (others => (others => (others => '0')));
 begin
   process(isl_clk)
-    variable v_data_out : t_state;
+    variable v_data_out : t_key(0 to C_KEY_WORDS-1);
     variable v_rot_word,
              v_sub_word,
              v_rcon_word : t_word;
@@ -41,19 +44,19 @@ begin
       -- process all the steps
       if sl_process = '1' then
         -- rotate
-        for row in ia_data'RANGE loop
+        for row in 0 to 3 loop
           -- avoid modulo by using unsigned overflow
           v_new_row := to_integer(to_unsigned(row, 2) - 1);
-          v_rot_word(v_new_row) := a_data_out(row, C_STATE_COLS-1);
+          v_rot_word(v_new_row) := a_data_out(row)(C_STATE_COLS-1);
         end loop;
 
         -- substitute
-        for col in ia_data'RANGE loop
+        for col in 0 to 3 loop
           v_sub_word(col) := C_SBOX(to_integer(v_rot_word(col)));
         end loop;
 
         -- xor rcon
-        for col in ia_data'RANGE loop
+        for col in 0 to 3 loop
           v_rcon_word(col) := v_sub_word(col) xor a_rcon(col);
         end loop;
 
@@ -61,12 +64,14 @@ begin
         a_rcon(0) <= double(a_rcon(0));
 
         -- xor last word
-        for row in ia_data'RANGE loop
-          v_data_out(row, 0) := a_data_out(row, 0) xor v_rcon_word(row);
+        -- oldest word is v_data_out(C_KEY_WORDS-4)
+        v_data_out(C_KEY_WORDS-4 to C_KEY_WORDS-1) := a_data_out(0 to 3);
+        for row in 0 to 3 loop
+          v_data_out(row)(0) := a_data_out(row+C_KEY_WORDS-4)(0) xor v_rcon_word(row);
           -- assign the following three words -> no sub, rot, ... needed
-          v_data_out(row, 1) := v_data_out(row, 0) xor a_data_out(row, 1);
-          v_data_out(row, 2) := v_data_out(row, 1) xor a_data_out(row, 2);
-          v_data_out(row, 3) := v_data_out(row, 2) xor a_data_out(row, 3);
+          v_data_out(row)(1) := v_data_out(row)(0) xor a_data_out(row+C_KEY_WORDS-4)(1);
+          v_data_out(row)(2) := v_data_out(row)(1) xor a_data_out(row+C_KEY_WORDS-4)(2);
+          v_data_out(row)(3) := v_data_out(row)(2) xor a_data_out(row+C_KEY_WORDS-4)(3);
 
           a_data_out <= v_data_out;
         end loop;
@@ -74,5 +79,9 @@ begin
     end if;
   end process;
 
-  oa_data <= a_data_out;
+  gen_output_row: for row in 0 to 3 generate
+    gen_output_col: for col in 0 to 3 generate
+      oa_data(row, col) <= a_data_out(row)(col);
+    end generate;
+  end generate;
 end architecture rtl;

@@ -14,6 +14,8 @@ package aes_pkg is
   subtype t_state is t_usig_2d(0 to C_STATE_ROWS-1, 0 to C_STATE_COLS-1);
   subtype t_sbox is t_usig_1d(0 to 255);
 
+  type t_key is array(natural range <>) of t_word;
+
   constant C_SBOX : t_sbox;
 
   function double(value : unsigned(7 downto 0)) return unsigned;

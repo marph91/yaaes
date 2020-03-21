@@ -9,27 +9,30 @@ library aes_lib;
 
 entity aes is
   generic (
+    C_BITWIDTH_IF : integer range 8 to 128 := 8; -- bitwidth of the input/output interface
+
     C_MODE : t_mode := ECB;
     C_ENCRYPTION : integer range 0 to 1 := 1;
-    C_BITWIDTH : integer range 8 to 128 := 8
+    C_BITWIDTH_KEY : integer := 128
   );
   port (
     isl_clk         : in std_logic;
     isl_valid       : in std_logic;
-    islv_plaintext  : in std_logic_vector(C_BITWIDTH-1 downto 0);
+    islv_plaintext  : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     isl_new_key     : in std_logic;
-    islv_key        : in std_logic_vector(C_BITWIDTH-1 downto 0);
-    islv_iv         : in std_logic_vector(C_BITWIDTH-1 downto 0);
-    oslv_ciphertext : out std_logic_vector(C_BITWIDTH-1 downto 0);
+    islv_key        : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+    islv_iv         : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+    oslv_ciphertext : out std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     osl_valid       : out std_logic
   );
 end entity aes;
 
 architecture rtl of aes is
-  -- TODO: use record for cipher related signals
+  constant C_KEY_WORDS : integer := C_BITWIDTH_KEY / 32;
+
   signal sl_valid_conv,
          sl_valid_cipher_out : std_logic := '0';
-  signal slv_data_out : std_logic_vector(C_BITWIDTH-1 downto 0) := (others => '0');
+  signal slv_data_out : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
   signal a_key_conv,
          a_data_conv,
          a_iv_conv,
@@ -37,13 +40,14 @@ architecture rtl of aes is
          a_data_cipher_out,
          a_key_cipher_in,
          a_data_out : t_state := (others => (others => (others => '0')));
-  
+  signal a_key_cipher_in_conv : t_key(0 to C_KEY_WORDS-1) := (others => (others => (others => '0')));
+
   signal sl_chain : std_logic := '0';
 
 begin
   i_input_conversion : entity aes_lib.input_conversion
   generic map(
-    C_BITWIDTH => C_BITWIDTH
+    C_BITWIDTH => C_BITWIDTH_IF
   )
   port map(
     isl_clk   => isl_clk,
@@ -58,19 +62,28 @@ begin
     osl_valid => sl_valid_conv
   );
 
+  gen_key_row: for row in 0 to 3 generate
+    gen_key_col: for col in 0 to 3 generate
+      a_key_cipher_in_conv(row)(col) <= a_key_cipher_in(row, col);
+    end generate;
+  end generate;
+
   i_cipher : entity aes_lib.cipher
+  generic map(
+    C_KEY_WORDS => C_KEY_WORDS
+  )
   port map(
     isl_clk   => isl_clk,
     isl_valid => sl_valid_conv,
     ia_data   => a_data_cipher_in,
-    ia_key    => a_key_cipher_in,
+    ia_key    => a_key_cipher_in_conv,
     oa_data   => a_data_cipher_out,
     osl_valid => sl_valid_cipher_out
   );
 
   i_output_conversion : entity aes_lib.output_conversion
   generic map(
-    C_BITWIDTH => C_BITWIDTH
+    C_BITWIDTH => C_BITWIDTH_IF
   )
   port map(
     isl_clk   => isl_clk,
@@ -80,9 +93,9 @@ begin
     osl_valid => osl_valid
   );
   
-  assert C_BITWIDTH = 8 or
-         C_BITWIDTH = 32 or
-         C_BITWIDTH = 128 report "unsupported bitwidth " & integer'IMAGE(C_BITWIDTH) severity failure;
+  assert C_BITWIDTH_IF = 8 or
+         C_BITWIDTH_IF = 32 or
+         C_BITWIDTH_IF = 128 report "unsupported bitwidth " & integer'IMAGE(C_BITWIDTH_IF) severity failure;
   
   proc_chain : process(isl_clk)
   begin

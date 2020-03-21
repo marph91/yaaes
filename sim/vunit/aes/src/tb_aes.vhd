@@ -48,7 +48,7 @@ architecture rtl of tb_aes is
 begin
   dut_aes: entity aes_lib.aes
   generic map (
-    C_BITWIDTH => C_BITWIDTH,
+    C_BITWIDTH_IF => C_BITWIDTH,
     C_ENCRYPTION => C_ENCRYPTION,
     C_MODE => C_MODE
   )
