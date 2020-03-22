@@ -75,7 +75,7 @@ def create_test_suite(ui):
     # test configs
     # TODO: duplicated at aes selftest
     # TODO: allow more variability, e. g. varying segment_size for CFB
-    cfg1 = {
+    cfg1 = {  # test vector from: FIPS-197, Appendix B
         "input": "same",
         "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
         "C_PLAINTEXT2": "3243f6a8885a308d313198a2e0370734",
@@ -93,7 +93,7 @@ def create_test_suite(ui):
         "C_PLAINTEXT2": common.random_hex(32),
         "C_KEY": common.random_hex(32),
     }
-    cfg4 = {
+    cfg4 = {  # test vector from: FIPS-197, Appendix C.3
         "input": "same",
         "C_PLAINTEXT1": "00112233445566778899aabbccddeeff",
         "C_PLAINTEXT2": "00112233445566778899aabbccddeeff",

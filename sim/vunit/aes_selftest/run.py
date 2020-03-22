@@ -20,7 +20,7 @@ def create_test_suite(ui):
     tb_aes = lib.entity("tb_aes_selftest")
 
     # test configs
-    cfg1 = {
+    cfg1 = {  # test vector from: FIPS-197, Appendix B
         "input": "same",
         "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
         "C_PLAINTEXT2": "3243f6a8885a308d313198a2e0370734",
@@ -38,7 +38,7 @@ def create_test_suite(ui):
         "C_PLAINTEXT2": common.random_hex(32),
         "C_KEY": common.random_hex(32),
     }
-    cfg4 = {
+    cfg4 = {  # test vector from: FIPS-197, Appendix C.3
         "input": "same",
         "C_PLAINTEXT1": "00112233445566778899aabbccddeeff",
         "C_PLAINTEXT2": "00112233445566778899aabbccddeeff",
