@@ -23,8 +23,9 @@ entity output_conversion is
 end entity output_conversion;
 
 architecture rtl of output_conversion is
-  signal int_row : integer range 0 to C_STATE_ROWS-1 := 0;
-  signal int_col : integer range 0 to C_STATE_COLS-1 := 0;
+  constant C_TOTAL_DATUMS : integer := 128 / C_BITWIDTH;
+  signal int_output_cnt : integer range 0 to C_TOTAL_DATUMS := 0;
+
   signal sl_output_valid,
          sl_output_valid_d1 : std_logic := '0';
 
@@ -39,24 +40,18 @@ begin
         sl_output_valid <= '1';
         slv_data <= array_to_slv(transpose(ia_data));
       end if;
-      
+
       if sl_output_valid = '1' then
+        if int_output_cnt < C_TOTAL_DATUMS - 1 then
+          int_output_cnt <= int_output_cnt + 1;
+        else
+          sl_output_valid <= '0';
+          int_output_cnt <= 0;
+        end if;
+        
         oslv_data <= slv_data(slv_data'HIGH downto slv_data'HIGH-C_BITWIDTH+1);
         slv_data <= slv_data(slv_data'HIGH-C_BITWIDTH downto slv_data'LOW) &
                     slv_data(slv_data'HIGH downto slv_data'HIGH-C_BITWIDTH+1);
-
-        -- TODO: use rows/cols per input instead of C_BITWIDTH
-        if int_row < C_STATE_ROWS-1 and C_BITWIDTH = 8 then
-          int_row <= int_row+1;
-        else
-          int_row <= 0;
-          if int_col < C_STATE_COLS-1 and C_BITWIDTH /= 128 then
-            int_col <= int_col+1;
-          else
-            int_col <= 0;
-            sl_output_valid <= '0';
-          end if;
-        end if;
       end if;
     end if;
   end process;

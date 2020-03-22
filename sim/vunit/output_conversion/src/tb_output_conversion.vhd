@@ -85,7 +85,7 @@ begin
     end loop;
 
     wait until rising_edge(sl_clk);
-    CHECK_EQUAL(sl_valid_out, '0');
+    CHECK_EQUAL(sl_valid_out, '0', "output valid");
 
     report ("Done checking");
     sl_data_check_done <= '1';

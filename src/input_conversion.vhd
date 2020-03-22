@@ -37,8 +37,6 @@ begin
   process (isl_clk)
   begin
     if rising_edge(isl_clk) then
-      sl_output_valid <= '0';
-
       if isl_valid = '1' then
         int_input_cnt <= int_input_cnt + 1;
         if int_input_cnt < C_KEY_DATUMS then
