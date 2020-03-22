@@ -29,8 +29,8 @@ architecture rtl of tb_input_conversion is
   signal slv_iv_in,
          slv_data_key_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
   signal a_iv_out,
-         a_key_out,
          a_data_out : t_state;
+  signal a_key_out : t_key(0 to C_BITWIDTH_KEY/32-1);
   signal sl_valid_in,
          sl_valid_out : std_logic;
   -- TODO: test sl_chain = '1'
@@ -109,7 +109,7 @@ begin
         -- a_data_out and a_iv_out should be transposed
         report "row: " & to_string(row) & ", col: " & to_string(col);
         CHECK_EQUAL(a_data_out(row, col), a_data_ref(col, row), "data");
-        CHECK_EQUAL(a_key_out(row, col), a_data_ref(row, col), "key");
+        CHECK_EQUAL(a_key_out(row)(col), a_data_ref(row, col), "key");
         CHECK_EQUAL(a_iv_out(row, col), a_data_ref(col, row), "iv");
       end loop;
     end loop;

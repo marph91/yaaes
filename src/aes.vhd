@@ -32,20 +32,22 @@ architecture rtl of aes is
   signal sl_valid_conv,
          sl_valid_cipher_out : std_logic := '0';
   signal slv_data_out : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
-  signal a_key_conv,
-         a_data_conv,
+  signal a_data_conv,
          a_iv_conv,
          a_data_cipher_in,
          a_data_cipher_out,
-         a_key_cipher_in,
          a_data_out : t_state := (others => (others => (others => '0')));
+
+  signal a_key_cipher_in,
+         a_key_conv : t_key(0 to C_KEY_WORDS-1) := (others => (others => (others => '0')));
 
   signal sl_chain : std_logic := '0';
 
 begin
   i_input_conversion : entity aes_lib.input_conversion
   generic map(
-    C_BITWIDTH_IF => C_BITWIDTH_IF
+    C_BITWIDTH_IF => C_BITWIDTH_IF,
+    C_BITWIDTH_KEY => C_BITWIDTH_KEY
   )
   port map(
     isl_clk   => isl_clk,
@@ -67,7 +69,7 @@ begin
     isl_clk   => isl_clk,
     isl_valid => sl_valid_conv,
     ia_data   => a_data_cipher_in,
-    ia_key    => type_state_to_key(a_key_cipher_in),
+    ia_key    => a_key_cipher_in,
     oa_data   => a_data_cipher_out,
     osl_valid => sl_valid_cipher_out
   );

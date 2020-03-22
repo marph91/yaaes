@@ -8,7 +8,7 @@ library aes_lib;
 entity input_conversion is
   generic (
     C_BITWIDTH_IF   : integer range 8 to 128 := 128;
-    C_BITWIDTH_KEY  : integer range 8 to 128 := 128
+    C_BITWIDTH_KEY  : integer range 128 to 256 := 128
   );
   port (
     isl_clk         : in std_logic;
@@ -17,7 +17,7 @@ entity input_conversion is
     isl_chain       : in std_logic;
     islv_iv         : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     oa_iv           : out t_state;
-    oa_key          : out t_state;
+    oa_key          : out t_key(0 to C_BITWIDTH_KEY/32-1);
     oa_data         : out t_state;
     osl_valid       : out std_logic
   );
@@ -31,8 +31,8 @@ architecture rtl of input_conversion is
   signal sl_output_valid : std_logic := '0';
 
   signal slv_data,
-         slv_key,
          slv_iv : std_logic_vector(127 downto 0);
+  signal slv_key : std_logic_vector(C_BITWIDTH_KEY-1 downto 0);
 begin
   process (isl_clk)
   begin
@@ -56,8 +56,8 @@ begin
     end if;
   end process;
 
-  oa_data <= transpose(slv_to_array(slv_data));
-  oa_key <= slv_to_array(slv_key); -- don't transpose key, since it's needed like this by the key expansion
-  oa_iv <= transpose(slv_to_array(slv_iv));
+  oa_data <= transpose(slv_to_state_array(slv_data));
+  oa_key <= slv_to_key_array(slv_key); -- don't transpose key, since it's needed like this by the key expansion
+  oa_iv <= transpose(slv_to_state_array(slv_iv));
   osl_valid <= sl_output_valid;
 end architecture rtl;

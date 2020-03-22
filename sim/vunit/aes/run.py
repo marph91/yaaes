@@ -73,7 +73,6 @@ def create_test_suite(ui):
 
     # simulate two rounds of en- and decrypting for each chaining mode
     # TODO: implement counter mode. this would require some more input signals
-    bw_key = 128
     for encryption in [0, 1]:
         encr_str = "encrypt" if encryption else "decrypt"
         encr_func = encrypt if encryption else decrypt
@@ -88,7 +87,6 @@ def create_test_suite(ui):
                 "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
                 "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
-                "C_BITWIDTH_KEY": bw_key,
                 }
             gen2 = {
                 "input": "different",
@@ -97,7 +95,6 @@ def create_test_suite(ui):
                 "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
                 "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
-                "C_BITWIDTH_KEY": bw_key,
                 }
             gen3 = {
                 "input": "random",
@@ -106,33 +103,44 @@ def create_test_suite(ui):
                 "C_KEY": common.random_hex(32),
                 "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
-                "C_BITWIDTH_KEY": bw_key,
+                }
+            gen4 = {
+                "input": "same",
+                "C_PLAINTEXT1": "00112233445566778899aabbccddeeff",
+                "C_PLAINTEXT2": "00112233445566778899aabbccddeeff",
+                "C_KEY": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+                "C_IV": common.random_hex(32),
+                "C_ENCRYPTION": encryption,
                 }
 
             bw = 128
-            for gen in [gen1, gen2, gen3]:
+            for gen in [gen1, gen2, gen3, gen4]:
                 # TODO: python byteorder is LSB...MSB, VHDL is MSB downto LSB
+                bw_key = len(gen["C_KEY"]) * 4  # 2 hex chars -> 8 bits
                 ciphertext1, iv2 = encr_func(
                     gen["C_PLAINTEXT1"], gen["C_KEY"], gen["C_IV"], mode)
                 ciphertext2, _ = encr_func(
                     gen["C_PLAINTEXT2"], gen["C_KEY"], iv2, mode)
                 gen.update({
                     "C_BITWIDTH_IF": bw,
+                    "C_BITWIDTH_KEY": bw_key,
                     "C_MODE": mode,
                     "C_CIPHERTEXT1": ciphertext1,
                     "C_CIPHERTEXT2": ciphertext2,
                     })
                 tb_aes.add_config(
-                    name="%s_mode=%s_bw=%d_input=%s" % (encr_str, mode, bw,
-                                                        gen.pop("input")),
+                    name="aes_%d_%s_mode_%s_bw_%d_input_%s" % (
+                        bw_key, encr_str, mode, bw, gen.pop("input")),
                     generics=gen)
 
             # Add test for 8 and 32 bit bitwidth.
             # Use stimuli and references from gen3.
             for bw in [8, 32]:
                 gen3.update({"C_BITWIDTH_IF": bw})
-                tb_aes.add_config(name="%s_mode=%s_bw=%d_input=random"
-                                  % (encr_str, mode, bw), generics=gen3)
+                bw_key = len(gen3["C_KEY"]) * 4  # 2 hex chars -> 8 bits
+                tb_aes.add_config(name="aes_%d_%s_mode=%s_bw=%d_input=random"
+                                  % (bw_key, encr_str, mode, bw),
+                                  generics=gen3)
 
 
 if __name__ == "__main__":
