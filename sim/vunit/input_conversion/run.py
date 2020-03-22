@@ -17,7 +17,8 @@ def create_test_suite(ui):
     tb_input_conversion = lib.entity("tb_input_conversion")
 
     for bw in [8, 32, 128]:
-        gen = {"C_BITWIDTH": bw}
+        gen = {"C_BITWIDTH_IF": bw,
+               "C_BITWIDTH_KEY": 128}
         tb_input_conversion.add_config(name="bw=%d" % bw, generics=gen)
 
 

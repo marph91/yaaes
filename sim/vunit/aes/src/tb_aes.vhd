@@ -38,8 +38,7 @@ architecture rtl of tb_aes is
   signal sl_valid_in : std_logic := '0';
   signal sl_new_key_in : std_logic := '0';
 
-  signal slv_data_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
-  signal slv_key_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
+  signal slv_data_key_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
   signal slv_iv_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
   signal slv_data_out : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
   signal sl_valid_out : std_logic;
@@ -60,9 +59,8 @@ begin
 	port map (
     isl_clk   => sl_clk,
     isl_valid => sl_valid_in,
-    islv_plaintext => slv_data_in,
+    islv_plaintext => slv_data_key_in,
     isl_new_key => sl_new_key_in,
-    islv_key  => slv_key_in,
     islv_iv   => slv_iv_in,
     oslv_ciphertext => slv_data_out,
     osl_valid => sl_valid_out
@@ -78,9 +76,12 @@ begin
 
     sl_valid_in <= '1';
     sl_new_key_in <= '1';
-    for i in 128/C_BITWIDTH_IF-1 downto 0 loop
-      slv_data_in <= hex_to_slv(C_PLAINTEXT1)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
-      slv_key_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+    for i in C_BITWIDTH_KEY / C_BITWIDTH_IF - 1 downto 0 loop
+      slv_data_key_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      wait until rising_edge(sl_clk);
+    end loop;
+    for i in 128 / C_BITWIDTH_IF - 1 downto 0 loop
+      slv_data_key_in <= hex_to_slv(C_PLAINTEXT1)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
       slv_iv_in <= hex_to_slv(C_IV)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
       wait until rising_edge(sl_clk);
     end loop;
@@ -93,7 +94,7 @@ begin
 
     sl_valid_in <= '1';
     for i in 128/C_BITWIDTH_IF-1 downto 0 loop
-      slv_data_in <= hex_to_slv(C_PLAINTEXT2)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      slv_data_key_in <= hex_to_slv(C_PLAINTEXT2)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
       -- no new key and iv needed
       wait until rising_edge(sl_clk);
     end loop;

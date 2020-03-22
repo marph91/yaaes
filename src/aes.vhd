@@ -20,7 +20,6 @@ entity aes is
     isl_valid       : in std_logic;
     islv_plaintext  : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     isl_new_key     : in std_logic;
-    islv_key        : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     islv_iv         : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     oslv_ciphertext : out std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     osl_valid       : out std_logic
@@ -46,14 +45,13 @@ architecture rtl of aes is
 begin
   i_input_conversion : entity aes_lib.input_conversion
   generic map(
-    C_BITWIDTH => C_BITWIDTH_IF
+    C_BITWIDTH_IF => C_BITWIDTH_IF
   )
   port map(
     isl_clk   => isl_clk,
     isl_valid => isl_valid,
-    islv_data => islv_plaintext,
+    islv_data_key => islv_plaintext,
     isl_chain => sl_chain,
-    islv_key  => islv_key,
     islv_iv   => islv_iv,
     oa_iv     => a_iv_conv,
     oa_key    => a_key_conv,
