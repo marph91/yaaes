@@ -73,6 +73,7 @@ def create_test_suite(ui):
 
     # simulate two rounds of en- and decrypting for each chaining mode
     # TODO: implement counter mode. this would require some more input signals
+    bw_key = 128
     for encryption in [0, 1]:
         encr_str = "encrypt" if encryption else "decrypt"
         encr_func = encrypt if encryption else decrypt
@@ -87,6 +88,7 @@ def create_test_suite(ui):
                 "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
                 "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
+                "C_BITWIDTH_KEY": bw_key,
                 }
             gen2 = {
                 "input": "different",
@@ -95,6 +97,7 @@ def create_test_suite(ui):
                 "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
                 "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
+                "C_BITWIDTH_KEY": bw_key,
                 }
             gen3 = {
                 "input": "random",
@@ -103,6 +106,7 @@ def create_test_suite(ui):
                 "C_KEY": common.random_hex(32),
                 "C_IV": common.random_hex(32),
                 "C_ENCRYPTION": encryption,
+                "C_BITWIDTH_KEY": bw_key,
                 }
 
             bw = 128
@@ -113,7 +117,7 @@ def create_test_suite(ui):
                 ciphertext2, _ = encr_func(
                     gen["C_PLAINTEXT2"], gen["C_KEY"], iv2, mode)
                 gen.update({
-                    "C_BITWIDTH": bw,
+                    "C_BITWIDTH_IF": bw,
                     "C_MODE": mode,
                     "C_CIPHERTEXT1": ciphertext1,
                     "C_CIPHERTEXT2": ciphertext2,
@@ -126,7 +130,7 @@ def create_test_suite(ui):
             # Add test for 8 and 32 bit bitwidth.
             # Use stimuli and references from gen3.
             for bw in [8, 32]:
-                gen3.update({"C_BITWIDTH": bw})
+                gen3.update({"C_BITWIDTH_IF": bw})
                 tb_aes.add_config(name="%s_mode=%s_bw=%d_input=random"
                                   % (encr_str, mode, bw), generics=gen3)
 
