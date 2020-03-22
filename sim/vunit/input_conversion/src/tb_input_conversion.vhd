@@ -95,11 +95,14 @@ begin
     sl_data_check_done <= '0';
 
     wait until rising_edge(sl_clk) and sl_valid_out = '1';
-    for col in 0 to 3 loop
-      for row in 0 to 3 loop
-        CHECK_EQUAL(a_data_out(col, row), a_data_ref(col, row));
-        CHECK_EQUAL(a_key_out(col, row), a_data_ref(col, row));
-        CHECK_EQUAL(a_iv_out(col, row), a_data_ref(col, row));
+    for row in 0 to 3 loop
+      for col in 0 to 3 loop
+        -- a_key_out should be one word per row
+        -- a_data_out and a_iv_out should be transposed
+        report "row: " & to_string(row) & ", col: " & to_string(col);
+        CHECK_EQUAL(a_data_out(row, col), a_data_ref(col, row), "data");
+        CHECK_EQUAL(a_key_out(row, col), a_data_ref(row, col), "key");
+        CHECK_EQUAL(a_iv_out(row, col), a_data_ref(col, row), "iv");
       end loop;
     end loop;
 

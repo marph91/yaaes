@@ -23,6 +23,12 @@ package aes_pkg is
 
   function xor_array(a, b : t_state) return t_state;
 
+  function type_state_to_key(arr_in : t_state) return t_key;
+  function type_key_to_state(arr_in : t_key(0 to 3)) return t_state;
+  
+  function transpose(arr_in : t_state) return t_state;
+  function transpose(arr_in : t_key(0 to 3)) return t_state;
+
   function slv_to_array(vec : std_logic_vector(127 downto 0)) return t_state;
   function array_to_slv(arr : t_state) return std_logic_vector;
 end package aes_pkg;
@@ -78,13 +84,61 @@ package body aes_pkg is
       return c;
     end xor_array;
 
+    -- convert an array of type "state" to type "key"
+    function type_state_to_key(arr_in : t_state) return t_key is
+      variable arr_out : t_key(0 to 3);
+    begin
+      for row in arr_in'RANGE(1) loop
+        for col in arr_in'RANGE(2) loop
+          arr_out(row)(col) := arr_in(row, col);
+        end loop;
+      end loop;
+      return arr_out;
+    end function;
+
+    -- convert an array of type "key" to type "state"
+    function type_key_to_state(arr_in : t_key(0 to 3)) return t_state is
+      variable arr_out : t_state;
+    begin
+      for row in arr_out'RANGE(1) loop
+        for col in arr_out'RANGE(2) loop
+          arr_out(row, col) := arr_in(row)(col);
+        end loop;
+      end loop;
+      return arr_out;
+    end function;
+
+    -- transpose an array
+    function transpose(arr_in : t_state) return t_state is
+      variable arr_out : t_state;
+    begin
+      for row in arr_in'RANGE(1) loop
+        for col in arr_in'RANGE(2) loop
+          arr_out(row, col) := arr_in(col, row);
+        end loop;
+      end loop;
+      return arr_out;
+    end function;
+
+    function transpose(arr_in : t_key(0 to 3)) return t_state is
+      variable arr_out : t_state;
+    begin
+      for row in arr_out'RANGE(1) loop
+        for col in arr_out'RANGE(2) loop
+          arr_out(row, col) := arr_in(col)(row);
+        end loop;
+      end loop;
+      return arr_out;
+    end function;
+
     -- convert a std_logic_vector to an array
     function slv_to_array(vec : std_logic_vector(127 downto 0)) return t_state is
       variable arr : t_state;
     begin
       for row in arr'RANGE(1) loop
         for col in arr'RANGE(2) loop
-          arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) := unsigned(vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8));
+          arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col) :=
+            unsigned(vec((col+C_STATE_ROWS*row + 1) * 8 - 1 downto (col+C_STATE_ROWS*row) * 8));
         end loop;
       end loop;
       return arr;
@@ -96,7 +150,8 @@ package body aes_pkg is
     begin
       for row in arr'RANGE(1) loop
         for col in arr'RANGE(2) loop
-          vec((row+C_STATE_ROWS*col + 1) * 8 - 1 downto (row+C_STATE_ROWS*col) * 8) := std_logic_vector(arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
+          vec((col+C_STATE_ROWS*row + 1) * 8 - 1 downto (col+C_STATE_ROWS*row) * 8) :=
+            std_logic_vector(arr(C_STATE_ROWS-1-row, C_STATE_COLS-1-col));
         end loop;
       end loop;
       return vec;

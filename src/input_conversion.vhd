@@ -61,8 +61,8 @@ begin
     end if;
   end process;
 
-  oa_data <= slv_to_array(slv_data);
-  oa_key <= slv_to_array(slv_key);
-  oa_iv <= slv_to_array(slv_iv);
+  oa_data <= transpose(slv_to_array(slv_data));
+  oa_key <= slv_to_array(slv_key); -- don't transpose key, since it's needed like this by the key expansion
+  oa_iv <= transpose(slv_to_array(slv_iv));
   osl_valid <= sl_output_valid;
 end architecture rtl;

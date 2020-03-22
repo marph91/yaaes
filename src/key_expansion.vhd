@@ -108,9 +108,5 @@ begin
     end if;
   end process;
 
-  gen_output_row: for row in 0 to 3 generate
-    gen_output_col: for col in 0 to 3 generate
-      oa_data(row, col) <= a_data_out(row)(col);
-    end generate;
-  end generate;
+  oa_data <= type_key_to_state(a_data_out(0 to 3));
 end architecture rtl;

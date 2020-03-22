@@ -40,7 +40,6 @@ architecture rtl of aes is
          a_data_cipher_out,
          a_key_cipher_in,
          a_data_out : t_state := (others => (others => (others => '0')));
-  signal a_key_cipher_in_conv : t_key(0 to C_KEY_WORDS-1) := (others => (others => (others => '0')));
 
   signal sl_chain : std_logic := '0';
 
@@ -62,12 +61,6 @@ begin
     osl_valid => sl_valid_conv
   );
 
-  gen_key_row: for row in 0 to 3 generate
-    gen_key_col: for col in 0 to 3 generate
-      a_key_cipher_in_conv(row)(col) <= a_key_cipher_in(row, col);
-    end generate;
-  end generate;
-
   i_cipher : entity aes_lib.cipher
   generic map(
     C_KEY_WORDS => C_KEY_WORDS
@@ -76,7 +69,7 @@ begin
     isl_clk   => isl_clk,
     isl_valid => sl_valid_conv,
     ia_data   => a_data_cipher_in,
-    ia_key    => a_key_cipher_in_conv,
+    ia_key    => type_state_to_key(a_key_cipher_in),
     oa_data   => a_data_cipher_out,
     osl_valid => sl_valid_cipher_out
   );

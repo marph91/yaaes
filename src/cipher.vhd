@@ -9,7 +9,7 @@ library aes_lib;
 
 entity cipher is
   generic (
-    C_KEY_WORDS    : integer := 4
+    C_KEY_WORDS : integer := 4
   );
   port (
     isl_clk   : in std_logic;
@@ -29,8 +29,10 @@ architecture rtl of cipher is
          sl_next_round : std_logic := '0';
 
   -- data container
-  signal a_key_in,
-         a_data_in,
+  -- data format in key expansion: words are rows
+  -- data format in cipher: words are columns
+  -- conversion: transpose matrix
+  signal a_data_in,
          a_data_added,
          a_data_srows : t_state := (others => (others => (others => '0')));
 
@@ -52,13 +54,6 @@ begin
     oa_data       => a_round_keys
   );
 
-  -- only needed to use the xor function
-  gen_key_row: for row in 0 to 3 generate
-    gen_key_col: for col in 0 to 3 generate
-      a_key_in(row, col) <= ia_key(row)(col);
-    end generate;
-  end generate;
-  
   process(isl_clk)
     variable v_new_col : integer range 0 to C_STATE_COLS-1;
     variable v_data_sbox,
@@ -71,7 +66,7 @@ begin
       if isl_valid = '1' then
         int_round_cnt <= 0;
 
-        a_data_added <= xor_array(a_key_in, ia_data);
+        a_data_added <= xor_array(transpose(ia_key(0 to 3)), ia_data);
       end if;
 
       -- substitute bytes and shift rows
@@ -88,9 +83,9 @@ begin
           end loop;
         end loop;
 
-        -- if round 9 is finished, mix columns step could be skipped,
+        -- if the second last round is finished, mix columns step could be skipped,
         -- but like this, the pipeline doesn't branch
-        if int_round_cnt < 9 then
+        if int_round_cnt < 6 + C_KEY_WORDS - 1 then
           int_round_cnt <= int_round_cnt + 1;
         else
           sl_last_round <= '1';
@@ -120,10 +115,10 @@ begin
 
         -- add key
         if sl_last_round = '0' then
-          a_data_added <= xor_array(a_round_keys, v_data_mcols);
+          a_data_added <= xor_array(transpose(a_round_keys), v_data_mcols);
         else
           -- final add key
-          a_data_added <= xor_array(a_round_keys, a_data_srows);
+          a_data_added <= xor_array(transpose(a_round_keys), a_data_srows);
           sl_last_round <= '0';
         end if;
       end if;
