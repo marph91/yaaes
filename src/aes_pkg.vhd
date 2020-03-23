@@ -23,6 +23,8 @@ package aes_pkg is
 
   function xor_array(a, b : t_state) return t_state;
 
+  function calculate_bw_iv(mode : t_mode) return integer;
+
   function type_state_to_key(arr_in : t_state) return t_key;
   function type_key_to_state(arr_in : t_key(0 to 3)) return t_state;
   
@@ -84,6 +86,19 @@ package body aes_pkg is
       end loop;
       return c;
     end xor_array;
+
+    -- calculate the bitwidth of the initialization vector
+    -- i. e. whether it is present or not
+    function calculate_bw_iv(mode : t_mode) return integer is
+      variable bw_iv : integer range 0 to 128 := 0;
+    begin
+      if mode = ECB then
+        bw_iv := 0;
+      else
+        bw_iv := 128;
+      end if;
+      return bw_iv;
+    end function;
 
     -- convert an array of type "state" to type "key"
     function type_state_to_key(arr_in : t_state) return t_key is

@@ -8,14 +8,14 @@ library aes_lib;
 entity input_conversion is
   generic (
     C_BITWIDTH_IF   : integer range 8 to 128 := 128;
-    C_BITWIDTH_KEY  : integer range 128 to 256 := 128
+    C_BITWIDTH_KEY  : integer range 128 to 256 := 128;
+    C_BITWIDTH_IV   : integer range 0 to 128 := 128
   );
   port (
     isl_clk         : in std_logic;
     isl_valid       : in std_logic;
-    islv_data_key   : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
-    isl_chain       : in std_logic;
-    islv_iv         : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+    islv_data       : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+    isl_chain       : in std_logic; -- TODO: implement reset/new key
     oa_iv           : out t_state;
     oa_key          : out t_key(0 to C_BITWIDTH_KEY/32-1);
     oa_data         : out t_state;
@@ -25,14 +25,15 @@ end entity input_conversion;
 
 architecture rtl of input_conversion is
   constant C_KEY_DATUMS : integer := C_BITWIDTH_KEY / C_BITWIDTH_IF;
-  constant C_TOTAL_DATUMS : integer := (C_BITWIDTH_KEY + 128) / C_BITWIDTH_IF;
+  constant C_KEY_IV_DATUMS : integer := C_KEY_DATUMS + C_BITWIDTH_IV / C_BITWIDTH_IF;
+  constant C_TOTAL_DATUMS : integer := C_KEY_IV_DATUMS + 128 / C_BITWIDTH_IF;
   signal int_input_cnt : integer range 0 to C_TOTAL_DATUMS := 0;
 
   signal sl_output_valid : std_logic := '0';
 
   signal slv_data,
-         slv_iv : std_logic_vector(127 downto 0);
-  signal slv_key : std_logic_vector(C_BITWIDTH_KEY-1 downto 0);
+         slv_iv : std_logic_vector(127 downto 0) := (others => '0');
+  signal slv_key : std_logic_vector(C_BITWIDTH_KEY-1 downto 0) := (others => '0');
 begin
   process (isl_clk)
   begin
@@ -40,17 +41,18 @@ begin
       if isl_valid = '1' then
         int_input_cnt <= int_input_cnt + 1;
         if int_input_cnt < C_KEY_DATUMS then
-          slv_key <= slv_key(slv_key'HIGH-C_BITWIDTH_IF downto slv_key'LOW) & islv_data_key;
+          slv_key <= slv_key(slv_key'HIGH-C_BITWIDTH_IF downto slv_key'LOW) & islv_data;
+        elsif int_input_cnt < C_KEY_IV_DATUMS then
+          slv_iv <= slv_iv(slv_iv'HIGH-C_BITWIDTH_IF downto slv_iv'LOW) & islv_data;
         elsif int_input_cnt < C_TOTAL_DATUMS then
-          slv_data <= slv_data(slv_data'HIGH-C_BITWIDTH_IF downto slv_data'LOW) & islv_data_key;
-          slv_iv <= slv_iv(slv_iv'HIGH-C_BITWIDTH_IF downto slv_iv'LOW) & islv_iv;
+          slv_data <= slv_data(slv_data'HIGH-C_BITWIDTH_IF downto slv_data'LOW) & islv_data;
         end if;
       end if;
 
       if int_input_cnt < C_TOTAL_DATUMS then
         sl_output_valid <= '0';
       else
-        int_input_cnt <= C_KEY_DATUMS;
+        int_input_cnt <= C_KEY_IV_DATUMS;
         sl_output_valid <= '1';
       end if;
     end if;

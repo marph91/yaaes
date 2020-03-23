@@ -17,9 +17,10 @@ library vunit_lib;
 
 entity tb_input_conversion is
   generic (
-    runner_cfg    : string;
-    C_BITWIDTH_IF : integer;
-    C_BITWIDTH_KEY: integer
+    runner_cfg     : string;
+    C_BITWIDTH_IF  : integer;
+    C_BITWIDTH_KEY : integer;
+    C_BITWIDTH_IV  : integer
   );
 end entity tb_input_conversion;
 
@@ -28,8 +29,7 @@ architecture rtl of tb_input_conversion is
 
   signal sl_clk : std_logic := '0';
 
-  signal slv_iv_in,
-         slv_data_key_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+  signal slv_data_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
   signal a_iv_out,
          a_data_out : t_state;
   signal a_key_out : t_key(0 to C_BITWIDTH_KEY/32-1);
@@ -52,14 +52,14 @@ begin
   dut_input_conversion: entity aes_lib.input_conversion
   generic map (
     C_BITWIDTH_IF  => C_BITWIDTH_IF,
-    C_BITWIDTH_KEY => C_BITWIDTH_KEY
+    C_BITWIDTH_KEY => C_BITWIDTH_KEY,
+    C_BITWIDTH_IV  => C_BITWIDTH_IV
   )
 	port map (
     isl_clk       => sl_clk,
     isl_valid     => sl_valid_in,
-    islv_data_key => slv_data_key_in,
+    islv_data     => slv_data_in,
     isl_chain     => sl_chain,
-    islv_iv       => slv_iv_in,
     oa_iv         => a_iv_out,
     oa_key        => a_key_out,
     oa_data       => a_data_out,
@@ -78,22 +78,43 @@ begin
     wait until rising_edge(sl_clk);
     sl_valid_in <= '1';
 
+    -- key
     for i in 0 to C_BITWIDTH_KEY / C_BITWIDTH_IF - 1 loop
-      slv_data_key_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
 
       slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
                       & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
       wait until rising_edge(sl_clk);
     end loop;
 
+    -- initialization vector (iv)
+    for i in 0 to C_BITWIDTH_IV / C_BITWIDTH_IF - 1 loop
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+
+      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
+                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      wait until rising_edge(sl_clk);
+    end loop;
+
+    -- actual data
     for i in 0 to 128 / C_BITWIDTH_IF - 1 loop
-      slv_data_key_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
-      slv_iv_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
 
       slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
                       & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
       wait until rising_edge(sl_clk);
     end loop;
+
+    -- wait until rising_edge(sl_clk);
+    -- wait until rising_edge(sl_clk);
+    -- wait until rising_edge(sl_clk);
+
+    -- -- second data input
+    -- for i in 0 to 128 / C_BITWIDTH_IF - 1 loop
+    --   slv_data_in <= std_logic_vector(to_unsigned(i, slv_data_in'LENGTH));
+    --   wait until rising_edge(sl_clk);
+    -- end loop;
+
     sl_valid_in <= '0';
 
     sl_stimuli_done <= '1';
@@ -104,6 +125,7 @@ begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_data_check_done <= '0';
 
+    -- result of first input inclusive data, key and iv
     wait until rising_edge(sl_clk) and sl_valid_out = '1';
     for row in 0 to 3 loop
       for col in 0 to 3 loop
@@ -112,12 +134,28 @@ begin
         report "row: " & to_string(row) & ", col: " & to_string(col);
         CHECK_EQUAL(a_data_out(row, col), a_data_ref(col, row), "data");
         CHECK_EQUAL(a_key_out(row)(col), a_data_ref(row, col), "key");
-        CHECK_EQUAL(a_iv_out(row, col), a_data_ref(col, row), "iv");
+        if C_BITWIDTH_IV /= 0 then
+          CHECK_EQUAL(a_iv_out(row, col), a_data_ref(col, row), "iv");
+        else
+          CHECK_EQUAL(a_iv_out(row, col), 0, "iv");
+        end if;
       end loop;
     end loop;
 
     wait until rising_edge(sl_clk);
     CHECK_EQUAL(sl_valid_out, '0', "output valid");
+
+    -- -- result of the second input (only data)
+    -- wait until rising_edge(sl_clk) and sl_valid_out = '1';
+    -- for row in 0 to 3 loop
+    --   for col in 0 to 3 loop
+    --     report "row: " & to_string(row) & ", col: " & to_string(col);
+    --     CHECK_EQUAL(a_data_out(row, col), a_data_ref(col, row), "data");
+    --   end loop;
+    -- end loop;
+
+    -- wait until rising_edge(sl_clk);
+    -- CHECK_EQUAL(sl_valid_out, '0', "output valid");
 
     report ("Done checking");
     sl_data_check_done <= '1';

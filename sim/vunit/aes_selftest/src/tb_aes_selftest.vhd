@@ -34,11 +34,12 @@ architecture rtl of tb_aes_selftest is
   constant C_CLK_PERIOD : time := 10 ns;
   signal sl_clk : std_logic := '0';
 
+  constant C_BITWIDTH_IV : integer range 0 to 128 := calculate_bw_iv(C_MODE);
+
   type t_module_inout is record
     sl_valid_in : std_logic;
-    slv_data_key_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+    slv_data_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     sl_new_key_in : std_logic;
-    slv_iv_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     slv_data_out : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     sl_valid_out : std_logic;
   end record t_module_inout;
@@ -62,9 +63,8 @@ begin
   port map (
     isl_clk=> sl_clk,
     isl_valid => r_encrypt.sl_valid_in,
-    islv_plaintext => r_encrypt.slv_data_key_in,
+    islv_plaintext => r_encrypt.slv_data_in,
     isl_new_key => r_encrypt.sl_new_key_in,
-    islv_iv => r_encrypt.slv_iv_in,
     oslv_ciphertext => r_encrypt.slv_data_out,
     osl_valid => r_encrypt.sl_valid_out
   );
@@ -80,9 +80,8 @@ begin
 	port map (
     isl_clk   => sl_clk,
     isl_valid => r_decrypt.sl_valid_in,
-    islv_plaintext => r_decrypt.slv_data_key_in,
+    islv_plaintext => r_decrypt.slv_data_in,
     isl_new_key => r_decrypt.sl_new_key_in,
-    islv_iv   => r_decrypt.slv_iv_in,
     oslv_ciphertext => r_decrypt.slv_data_out,
     osl_valid => r_decrypt.sl_valid_out
   );
@@ -101,30 +100,35 @@ begin
     r_decrypt.sl_valid_in <= '1';
     r_decrypt.sl_new_key_in <= '1';
     for i in C_BITWIDTH_KEY / C_BITWIDTH_IF - 1 downto 0 loop
-      r_encrypt.slv_data_key_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
-      r_decrypt.slv_data_key_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      r_encrypt.slv_data_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      r_decrypt.slv_data_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      wait until rising_edge(sl_clk);
+    end loop;
+
+    -- provide iv for encrypt and decrypt module
+    for i in C_BITWIDTH_IV / C_BITWIDTH_IF - 1 downto 0 loop
+      r_encrypt.slv_data_in <= hex_to_slv(C_IV)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      r_decrypt.slv_data_in <= hex_to_slv(C_IV)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
       wait until rising_edge(sl_clk);
     end loop;
     r_decrypt.sl_valid_in <= '0';
     r_decrypt.sl_new_key_in <= '0';
 
-    -- provide data and iv for encrypt module
+    -- provide data for encrypt module
     for i in 128 / C_BITWIDTH_IF - 1 downto 0 loop
-      r_encrypt.slv_data_key_in <= hex_to_slv(C_PLAINTEXT1)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
-      r_encrypt.slv_iv_in <= hex_to_slv(C_IV)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      r_encrypt.slv_data_in <= hex_to_slv(C_PLAINTEXT1)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
       wait until rising_edge(sl_clk);
     end loop;
     r_encrypt.sl_new_key_in <= '0';
     r_encrypt.sl_valid_in <= '0';
 
-    -- provide data and iv for decrypt module
+    -- provide data for decrypt module
     wait until rising_edge(sl_clk) and r_encrypt.sl_valid_out = '1';
     r_decrypt.sl_valid_in <= '1';
     r_decrypt.sl_new_key_in <= '1';
 
     for i in 128 / C_BITWIDTH_IF - 1 downto 0 loop
-      r_decrypt.slv_data_key_in <= r_encrypt.slv_data_out;
-      r_decrypt.slv_iv_in <= hex_to_slv(C_IV)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      r_decrypt.slv_data_in <= r_encrypt.slv_data_out;
       wait until rising_edge(sl_clk);
     end loop;
     r_decrypt.sl_valid_in <= '0';
@@ -136,7 +140,7 @@ begin
 
     r_encrypt.sl_valid_in <= '1';
     for i in 128 / C_BITWIDTH_IF-1 downto 0 loop
-      r_encrypt.slv_data_key_in <= hex_to_slv(C_PLAINTEXT2)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+      r_encrypt.slv_data_in <= hex_to_slv(C_PLAINTEXT2)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
       -- no new key and iv needed
       wait until rising_edge(sl_clk);
     end loop;
@@ -146,7 +150,7 @@ begin
     wait until rising_edge(sl_clk) and r_encrypt.sl_valid_out = '1';
     r_decrypt.sl_valid_in <= '1';
     for i in 128 / C_BITWIDTH_IF-1 downto 0 loop
-      r_decrypt.slv_data_key_in <= r_encrypt.slv_data_out;
+      r_decrypt.slv_data_in <= r_encrypt.slv_data_out;
       -- no new key and iv needed
       wait until rising_edge(sl_clk);
     end loop;
