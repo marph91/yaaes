@@ -65,38 +65,11 @@ def create_test_suite(lib):
     """Create a testsuite for the aes module."""
     tb_aes = lib.entity("tb_aes")
 
-    # test configs
-    # TODO: duplicated at aes selftest
-    # TODO: allow more variability, e. g. varying segment_size for CFB
-    cfg1 = {  # test vector from: FIPS-197, Appendix B
-        "input": "same",
-        "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
-        "C_PLAINTEXT2": "3243f6a8885a308d313198a2e0370734",
-        "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
-    }
-    cfg2 = {
-        "input": "different",
-        "C_PLAINTEXT1": "3243f6a8885a308d313198a2e0370734",
-        "C_PLAINTEXT2": "000102030405060708090a0b0c0d0e0f",
-        "C_KEY": "2b7e151628aed2a6abf7158809cf4f3c",
-    }
-    cfg3 = {
-        "input": "random",
-        "C_PLAINTEXT1": common.random_hex(32),
-        "C_PLAINTEXT2": common.random_hex(32),
-        "C_KEY": common.random_hex(32),
-    }
-    cfg4 = {  # test vector from: FIPS-197, Appendix C.3
-        "input": "same",
-        "C_PLAINTEXT1": "00112233445566778899aabbccddeeff",
-        "C_PLAINTEXT2": "00112233445566778899aabbccddeeff",
-        "C_KEY": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
-    }
-
     # simulate two rounds of en- and decrypting for each chaining mode
     # TODO: implement counter mode. this would require some more input signals
+    # TODO: allow more variability, e. g. varying segment_size for CFB
     test_params = itertools.product((0, 1), ("ECB", "CBC", "CFB", "OFB"),
-                                    (cfg1, cfg2, cfg3, cfg4))
+                                    common.get_aes_test_configs())
     for encryption, mode, gen in test_params:
         if not encryption and mode in ["ECB", "CBC"]:
             continue  # not yet implemented
