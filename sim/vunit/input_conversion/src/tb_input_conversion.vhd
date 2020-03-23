@@ -42,6 +42,10 @@ architecture rtl of tb_input_conversion is
                                   (x"01", x"05", x"09", x"0D"),
                                   (x"02", x"06", x"0A", x"0E"),
                                   (x"03", x"07", x"0B", x"0F"));
+  signal a_data_ref2 : t_state := ((x"FF", x"EF", x"DF", x"CF"),
+                                   (x"BF", x"AF", x"9F", x"8F"),
+                                   (x"7F", x"6F", x"5F", x"4F"),
+                                   (x"3F", x"2F", x"1F", x"0F"));
   signal slv_data_ref : std_logic_vector(127 downto 0);
 
   signal sl_start,
@@ -105,15 +109,25 @@ begin
       wait until rising_edge(sl_clk);
     end loop;
 
-    -- wait until rising_edge(sl_clk);
-    -- wait until rising_edge(sl_clk);
-    -- wait until rising_edge(sl_clk);
+    sl_valid_in <= '0';
+    wait until rising_edge(sl_clk);
 
-    -- -- second data input
-    -- for i in 0 to 128 / C_BITWIDTH_IF - 1 loop
-    --   slv_data_in <= std_logic_vector(to_unsigned(i, slv_data_in'LENGTH));
-    --   wait until rising_edge(sl_clk);
-    -- end loop;
+    -- wait some random cycles between the inputs
+    wait until rising_edge(sl_clk);
+    wait until rising_edge(sl_clk);
+
+    slv_data_ref <= array_to_slv(a_data_ref2);
+    wait until rising_edge(sl_clk);
+
+    -- second data input
+    sl_valid_in <= '1';
+    for i in 0 to 128 / C_BITWIDTH_IF - 1 loop
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+
+      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
+                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      wait until rising_edge(sl_clk);
+    end loop;
 
     sl_valid_in <= '0';
 
@@ -145,17 +159,17 @@ begin
     wait until rising_edge(sl_clk);
     CHECK_EQUAL(sl_valid_out, '0', "output valid");
 
-    -- -- result of the second input (only data)
-    -- wait until rising_edge(sl_clk) and sl_valid_out = '1';
-    -- for row in 0 to 3 loop
-    --   for col in 0 to 3 loop
-    --     report "row: " & to_string(row) & ", col: " & to_string(col);
-    --     CHECK_EQUAL(a_data_out(row, col), a_data_ref(col, row), "data");
-    --   end loop;
-    -- end loop;
+    -- result of the second input (only data)
+    wait until rising_edge(sl_clk) and sl_valid_out = '1';
+    for row in 0 to 3 loop
+      for col in 0 to 3 loop
+        report "row: " & to_string(row) & ", col: " & to_string(col);
+        CHECK_EQUAL(a_data_out(row, col), a_data_ref2(col, row), "data");
+      end loop;
+    end loop;
 
-    -- wait until rising_edge(sl_clk);
-    -- CHECK_EQUAL(sl_valid_out, '0', "output valid");
+    wait until rising_edge(sl_clk);
+    CHECK_EQUAL(sl_valid_out, '0', "output valid");
 
     report ("Done checking");
     sl_data_check_done <= '1';
