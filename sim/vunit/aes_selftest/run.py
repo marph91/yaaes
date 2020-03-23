@@ -3,19 +3,11 @@
 """Do selftests for the AES VHDL design."""
 
 
-import os
-
-from vunit import VUnit
-
 import common
 
 
-def create_test_suite(ui):
-    root = os.path.dirname(__file__)
-
-    ui.add_array_util()
-    lib = ui.add_library("test_lib", allow_duplicate=True)
-    lib.add_source_files(os.path.join(root, "src", "*.vhd"))
+def create_test_suite(lib):
+    """Create a testsuite for the aes selftests."""
     tb_aes = lib.entity("tb_aes_selftest")
 
     # simulate two rounds of en- and decrypting for each chaining mode

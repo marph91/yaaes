@@ -4,10 +4,8 @@
 
 
 from binascii import a2b_hex
-import os
 
 from Cryptodome.Cipher import AES
-from vunit import VUnit
 
 import common
 
@@ -45,9 +43,9 @@ def encrypt(plaintext, key, iv, mode):
 def decrypt(ciphertext, key, iv, mode):
     """Decrypt the given ciphertext."""
     if mode == "ECB":
-        return
+        return None
     elif mode == "CBC":
-        return
+        return None
     elif mode == "CFB":
         cipher = AES.new(a2b_hex(key), AES.MODE_CFB, iv=a2b_hex(iv),
                          segment_size=128)
@@ -62,13 +60,8 @@ def decrypt(ciphertext, key, iv, mode):
     return plaintext, next_iv
 
 
-def create_test_suite(ui):
-    root = os.path.dirname(__file__)
-
-    ui.add_array_util()
-    lib = ui.add_library("test_lib", allow_duplicate=True)
-    lib.add_source_files(os.path.join(root, "src", "*.vhd"))
-
+def create_test_suite(lib):
+    """Create a testsuite for the aes module."""
     tb_aes = lib.entity("tb_aes")
 
     # simulate two rounds of en- and decrypting for each chaining mode
