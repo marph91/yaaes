@@ -4,7 +4,9 @@ library ieee;
 
 library aes_lib;
   use aes_lib.aes_pkg.all;
-  use aes_lib.vunit_common_pkg.all;
+
+library test_lib;
+  use test_lib.vunit_common_pkg.all;
 
 library vunit_lib;
   context vunit_lib.vunit_context;

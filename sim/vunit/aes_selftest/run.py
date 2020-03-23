@@ -4,19 +4,12 @@
 
 
 import itertools
-import os
-
-from vunit import VUnit
 
 import common
 
 
-def create_test_suite(ui):
-    root = os.path.dirname(__file__)
-
-    ui.add_array_util()
-    lib = ui.add_library("test_lib", allow_duplicate=True)
-    lib.add_source_files(os.path.join(root, "src", "*.vhd"))
+def create_test_suite(lib):
+    """Create a testsuite for the aes selftests."""
     tb_aes = lib.entity("tb_aes_selftest")
 
     # test configs
@@ -61,10 +54,3 @@ def create_test_suite(ui):
             name="aes_%d_mode_%s_bw_%d_input_%s" % (
                 bw_key, mode, bw, gen["input"]),
             generics={k: v for k, v in gen.items() if k != "input"})
-
-
-if __name__ == "__main__":
-    os.environ["VUNIT_SIMULATOR"] = "ghdl"
-    UI = VUnit.from_argv()
-    create_test_suite(UI)
-    UI.main()

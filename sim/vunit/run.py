@@ -10,19 +10,24 @@ import subprocess
 from vunit import VUnit
 
 
-def create_test_suites(prj):
+def collect_test_suites(prj):
+    """Collect the testsuites of all modules and set parameters."""
     root = os.path.dirname(__file__)
     run_scripts = glob(os.path.join(root, "*", "run.py"))
+    testbenches = glob(os.path.join(root, "*", "src", "*.vhd"))
 
-    lib = prj.add_library("aes_lib")
-    lib.add_source_files(os.path.join(root, "vunit_common_pkg.vhd"))
-    lib.add_source_files("../../src/*.vhd")
+    aes_lib = prj.add_library("aes_lib")
+    aes_lib.add_source_files("../../src/*.vhd")
+
+    test_lib = prj.add_library("test_lib")
+    test_lib.add_source_files(os.path.join(root, "vunit_common_pkg.vhd"))
+    test_lib.add_source_files(testbenches)
 
     for run_script in run_scripts:
         spec = importlib.util.spec_from_file_location("run", run_script)
         mod = importlib.util.module_from_spec(spec)
         spec.loader.exec_module(mod)
-        mod.create_test_suite(prj)
+        mod.create_test_suite(test_lib)
 
     # avoid error "type of a shared variable must be a protected type"
     ghdl_flags = ["-frelaxed"]
@@ -39,8 +44,13 @@ def create_test_suites(prj):
     prj.set_sim_option("ghdl.elab_flags", ghdl_elab_flags)
 
 
-if __name__ == "__main__":
+def main():
+    """Run all collected testsuites of the modules."""
     os.environ["VUNIT_SIMULATOR"] = "ghdl"
-    PRJ = VUnit.from_argv()
-    create_test_suites(PRJ)
-    PRJ.main()
+    prj = VUnit.from_argv()
+    collect_test_suites(prj)
+    prj.main()
+
+
+if __name__ == "__main__":
+    main()
