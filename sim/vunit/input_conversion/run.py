@@ -7,7 +7,7 @@ def create_test_suite(lib):
     """Create a testsuite for the input conversion module."""
     tb_input_conversion = lib.entity("tb_input_conversion")
 
-    for bw in [8, 32, 128]:
-        gen = {"C_BITWIDTH_IF": bw,
+    for bw_if in [8, 32, 128]:
+        gen = {"C_BITWIDTH_IF": bw_if,
                "C_BITWIDTH_KEY": 128}
-        tb_input_conversion.add_config(name="bw=%d" % bw, generics=gen)
+        tb_input_conversion.add_config(name="bw=%d" % bw_if, generics=gen)

@@ -34,4 +34,4 @@ def get_aes_test_configs():
         "C_PLAINTEXT2": "00112233445566778899aabbccddeeff",
         "C_KEY": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
     }
-    return (cfg1, cfg2, cfg3, cfg4)
+    return cfg1, cfg2, cfg3, cfg4
