@@ -57,10 +57,3 @@ def create_test_suite(ui):
             gen3.update({"C_BITWIDTH": bw})
             tb_aes.add_config(name="mode=%s_bw=%d_input=random"
                               % (mode, bw), generics=gen3)
-
-
-if __name__ == "__main__":
-    os.environ["VUNIT_SIMULATOR"] = "ghdl"
-    UI = VUnit.from_argv()
-    create_test_suite(UI)
-    UI.main()

@@ -16,10 +16,3 @@ def create_test_suite(ui):
 
     tb_key_expansion = lib.entity("tb_key_expansion")
     tb_key_expansion.add_config(name="reference_vector")
-
-
-if __name__ == "__main__":
-    os.environ["VUNIT_SIMULATOR"] = "ghdl"
-    UI = VUnit.from_argv()
-    create_test_suite(UI)
-    UI.main()

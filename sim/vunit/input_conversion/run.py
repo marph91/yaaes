@@ -19,10 +19,3 @@ def create_test_suite(ui):
     for bw in [8, 32, 128]:
         gen = {"C_BITWIDTH": bw}
         tb_input_conversion.add_config(name="bw=%d" % bw, generics=gen)
-
-
-if __name__ == "__main__":
-    os.environ["VUNIT_SIMULATOR"] = "ghdl"
-    UI = VUnit.from_argv()
-    create_test_suite(UI)
-    UI.main()
