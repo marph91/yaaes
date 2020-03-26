@@ -9,11 +9,17 @@ library aes_lib;
 
 entity aes is
   generic (
-    C_BITWIDTH_IF : integer range 8 to 128 := 8; -- bitwidth of the input/output interface
+    -- bitwidth of the input/output interface (8, 32 or 128 bit)
+    C_BITWIDTH_IF : integer range 8 to 128 := 32;
 
+    -- one of the AES operation modes (ECB, CBC, CFB or OFB)
     C_MODE : t_mode := ECB;
+
+    -- encryption or decryption mode
     C_ENCRYPTION : integer range 0 to 1 := 1;
-    C_BITWIDTH_KEY : integer := 128
+
+    -- bitwidth of the key, i. e. AES-128 or AES-256
+    C_BITWIDTH_KEY : integer range 128 to 256 := 256
   );
   port (
     isl_clk         : in std_logic;
