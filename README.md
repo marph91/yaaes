@@ -21,13 +21,12 @@ Currently supported:
 
 ## Example results
 
-Device: Xilix Zynq 7010
-Configuration: AES-256 encryption in ECB mode with an interface bitwidth of 32 bit
-Results:
-
-- latency: 36 cycles (after initial key and init vector transmission)
-- 1353 LUT, 1242 FF
-- 0.171 ns worst negative slack at 200 MHz
+- Device: Xilix Zynq 7010
+- Configuration: AES-256 encryption in ECB mode with an interface bitwidth of 32 bit
+- Results:
+  - latency: 36 cycles (after initial key transmission)
+  - 1353 LUT, 1242 FF
+  - 0.171 ns worst negative slack at 200 MHz
 
 ## Requirements for running the testbenches
 
