@@ -19,15 +19,15 @@ Currently supported:
 | OFB | :heavy_check_mark: | :heavy_check_mark: |
 | CTR | :x: | :x: |
 
-## Example results (deprecated)
+## Example results
 
-128 bit encryption in ECB mode:
+Device: Xilix Zynq 7010
+Configuration: AES-256 encryption in ECB mode with an interface bitwidth of 32 bit
+Results:
 
-- simulation results:
-  - latency: 26 cycles (f. e. 260 ns at 100 MHz clock)
-- synthesis results for Zynq 7010:
-  - 1259 LUT, 964 FF
-  - 0.383 ns worst negative slack at 200 MHz
+- latency: 36 cycles (after initial key and init vector transmission)
+- 1353 LUT, 1242 FF
+- 0.171 ns worst negative slack at 200 MHz
 
 ## Requirements for running the testbenches
 
