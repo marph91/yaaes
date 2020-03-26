@@ -15,7 +15,7 @@ entity input_conversion is
     isl_clk         : in std_logic;
     isl_valid       : in std_logic;
     islv_data       : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
-    isl_chain       : in std_logic; -- TODO: implement reset/new key
+    isl_new_key_iv  : in std_logic;
     oa_iv           : out t_state;
     oa_key          : out t_key(0 to C_BITWIDTH_KEY/32-1);
     oa_data         : out t_state;
@@ -38,6 +38,10 @@ begin
   process (isl_clk)
   begin
     if rising_edge(isl_clk) then
+      if isl_new_key_iv = '1' then
+        int_input_cnt <= 0;
+      end if;
+
       if isl_valid = '1' then
         int_input_cnt <= int_input_cnt + 1;
         if int_input_cnt < C_KEY_DATUMS then

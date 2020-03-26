@@ -25,7 +25,7 @@ entity aes is
     isl_clk         : in std_logic;
     isl_valid       : in std_logic;
     islv_plaintext  : in std_logic_vector(C_BITWIDTH_IF-1 downto 0);
-    isl_new_key     : in std_logic;
+    isl_new_key_iv  : in std_logic;
     oslv_ciphertext : out std_logic_vector(C_BITWIDTH_IF-1 downto 0);
     osl_valid       : out std_logic
   );
@@ -48,7 +48,7 @@ architecture rtl of aes is
   signal a_key_cipher_in,
          a_key_conv : t_key(0 to C_KEY_WORDS-1) := (others => (others => (others => '0')));
 
-  signal sl_chain : std_logic := '0';
+  signal sl_new_key_iv : std_logic := '0';
 
 begin
   i_input_conversion : entity aes_lib.input_conversion
@@ -61,7 +61,7 @@ begin
     isl_clk   => isl_clk,
     isl_valid => isl_valid,
     islv_data => islv_plaintext,
-    isl_chain => sl_chain,
+    isl_new_key_iv => isl_new_key_iv,
     oa_iv     => a_iv_conv,
     oa_key    => a_key_conv,
     oa_data   => a_data_conv,
@@ -100,14 +100,14 @@ begin
   proc_chain : process(isl_clk)
   begin
     if rising_edge(isl_clk) then
-      if isl_new_key = '1' then
-        sl_chain <= '0';
+      if isl_new_key_iv = '1' then
+        sl_new_key_iv <= '1';
       end if;
       if sl_valid_conv = '1' then
-        sl_chain <= '1';
+        sl_new_key_iv <= '0';
       end if;
     end if;
-  end process proc_chain;
+  end process;
   
   gen_encryption : if C_ENCRYPTION = 1 generate
     gen_ecb : if C_MODE = ECB generate
@@ -118,7 +118,7 @@ begin
     end generate;
 
     gen_cbc : if C_MODE = CBC generate
-      a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_chain = '1'
+      a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_new_key_iv = '0'
                           else xor_array(a_iv_conv, a_data_conv);
       a_key_cipher_in <= a_key_conv;
       a_data_out <= a_data_cipher_out;
@@ -130,9 +130,9 @@ begin
       begin
         -- save the cipher input, because it gets modified as soon as there
         -- is new input (a_data_conv)
-        if sl_valid_cipher_out = '1' and sl_chain = '1' then
+        if sl_valid_cipher_out = '1' and sl_new_key_iv = '0' then
           a_data_cipher_in <= a_data_out;
-        elsif sl_chain = '0' then
+        elsif sl_new_key_iv = '1' then
           a_data_cipher_in <= a_iv_conv;
         end if;
       end process;
@@ -142,7 +142,7 @@ begin
     end generate;
 
     gen_ofb : if C_MODE = OFB generate
-      a_data_cipher_in <= a_data_cipher_out when sl_chain = '1' else a_iv_conv;
+      a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else a_iv_conv;
       a_key_cipher_in <= a_key_conv;
       a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;
@@ -162,9 +162,9 @@ begin
       begin
         -- save the cipher input, because it gets modified as soon as there
         -- is new input (a_data_conv)
-        if sl_valid_cipher_out = '1' and sl_chain = '1' then
+        if sl_valid_cipher_out = '1' and sl_new_key_iv = '0' then
           a_data_cipher_in <= a_data_conv;
-        elsif sl_chain = '0' then
+        elsif sl_new_key_iv = '1' then
           a_data_cipher_in <= a_iv_conv;
         end if;
       end process;
@@ -176,7 +176,7 @@ begin
     gen_ofb : if C_MODE = OFB generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
-      a_data_cipher_in <= a_data_cipher_out when sl_chain = '1' else a_iv_conv;
+      a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else a_iv_conv;
       a_key_cipher_in <= a_key_conv;
       a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;

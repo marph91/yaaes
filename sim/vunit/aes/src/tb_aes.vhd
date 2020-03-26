@@ -40,7 +40,7 @@ architecture rtl of tb_aes is
 
   signal sl_clk : std_logic := '0';
   signal sl_valid_in : std_logic := '0';
-  signal sl_new_key_in : std_logic := '0';
+  signal sl_new_key_iv : std_logic := '0';
 
   signal slv_data_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
   signal slv_data_out : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
@@ -63,7 +63,7 @@ begin
     isl_clk   => sl_clk,
     isl_valid => sl_valid_in,
     islv_plaintext => slv_data_in,
-    isl_new_key => sl_new_key_in,
+    isl_new_key_iv => sl_new_key_iv,
     oslv_ciphertext => slv_data_out,
     osl_valid => sl_valid_out
   );
@@ -76,8 +76,11 @@ begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_stimuli_done <= '0';
 
+    sl_new_key_iv <= '1';
+    wait until rising_edge(sl_clk);
+    sl_new_key_iv <= '0';
+
     sl_valid_in <= '1';
-    sl_new_key_in <= '1';
     -- key
     for i in C_BITWIDTH_KEY / C_BITWIDTH_IF - 1 downto 0 loop
       slv_data_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
@@ -96,7 +99,6 @@ begin
       wait until rising_edge(sl_clk);
     end loop;
 
-    sl_new_key_in <= '0';
     sl_valid_in <= '0';
     wait until rising_edge(sl_clk) and sl_valid_out = '1';
     wait until rising_edge(sl_clk) and sl_valid_out = '0';
