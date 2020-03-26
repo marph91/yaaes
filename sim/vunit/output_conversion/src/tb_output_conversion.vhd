@@ -74,7 +74,7 @@ begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_data_check_done <= '0';
 
-    slv_data_ref <= array_to_slv(a_data_ref);
+    slv_data_ref <= array_to_slv(transpose(a_data_ref));
     for i in 0 to 128 / C_BITWIDTH - 1 loop
       wait until rising_edge(sl_clk) and sl_valid_out = '1';
 
@@ -87,7 +87,7 @@ begin
     end loop;
 
     wait until rising_edge(sl_clk);
-    CHECK_EQUAL(sl_valid_out, '0');
+    CHECK_EQUAL(sl_valid_out, '0', "output valid");
 
     report ("Done checking");
     sl_data_check_done <= '1';

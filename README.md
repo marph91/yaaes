@@ -7,28 +7,31 @@ VHDL implementation of the symmetric block cipher AES, as specified in the NIST 
 
 Currently supported:
 
-| Mode | Encryption | Decryption | Bitwidth (In & Out) |
-| :---: | :---: | :---: | :---: |
-| ECB | :heavy_check_mark: | :x: | 8, 32 and 128 |
-| CBC | :heavy_check_mark: | :x: | 8, 32 and 128 |
-| CFB | :heavy_check_mark: | :heavy_check_mark: | 8, 32 and 128 |
-| OFB | :heavy_check_mark: | :heavy_check_mark: | 8, 32 and 128 |
-| CTR | :x: | :x: | - |
+- Interface bitwidth of 8, 32 and 128.
+- Key bitwidth of 128 and 256, i. e. AES-128 and AES-256.
+- The following modes:
+
+| Mode | Encryption | Decryption |
+| :---: | :---: | :---: |
+| ECB | :heavy_check_mark: | :x: |
+| CBC | :heavy_check_mark: | :x: |
+| CFB | :heavy_check_mark: | :heavy_check_mark: |
+| OFB | :heavy_check_mark: | :heavy_check_mark: |
+| CTR | :x: | :x: |
 
 ## Example results
 
-128 bit encryption in ECB mode:
-
-- simulation results:
-  - latency: 26 cycles (f. e. 260 ns at 100 MHz clock)
-- synthesis results for Zynq 7010:
-  - 1259 LUT, 964 FF
-  - 0.383 ns worst negative slack at 200 MHz
+- Device: Xilix Zynq 7010
+- Configuration: AES-256 encryption in ECB mode with an interface bitwidth of 32 bit
+- Results:
+  - latency: 36 cycles (after initial key transmission)
+  - 1353 LUT, 1242 FF
+  - 0.171 ns worst negative slack at 200 MHz
 
 ## Requirements for running the testbenches
 
-- GHDL: https://github.com/tgingold/ghdl
-- VUnit: https://github.com/vunit/vunit
-- Pycryptodome: https://github.com/Legrandin/pycryptodome
+- GHDL: <https://github.com/tgingold/ghdl>
+- VUnit: <https://github.com/vunit/vunit>
+- Pycryptodome: <https://github.com/Legrandin/pycryptodome>
 
-To run the testsuite, simply execute `cd sim/vunit/ && ./run.py`.
+To run the testsuite, simply execute `cd sim/vunit && ./run.py`.
