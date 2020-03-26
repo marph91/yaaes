@@ -77,7 +77,7 @@ def create_test_suite(lib):
         # TODO: python byteorder is LSB...MSB, VHDL is MSB downto LSB
         encr_str = "encrypt" if encryption else "decrypt"
         encr_func = encrypt if encryption else decrypt
-        bw_if = 128
+        bw_if = 32
         bw_key = len(gen["C_KEY"]) * 4  # 2 hex chars -> 8 bits
         init_vector = common.random_hex(32)
 
@@ -103,7 +103,7 @@ def create_test_suite(lib):
         if gen["input"] == "random":
             # Add test for 8 and 32 bit bitwidth.
             # Use stimuli and references from updated gen3.
-            for bw_if in (8, 32):
+            for bw_if in (8, 128):
                 tb_aes.add_config(name="aes_%d_%s_mode=%s_bw=%d_input=random"
                                   % (bw_key, encr_str, mode, bw_if),
                                   generics=generics)

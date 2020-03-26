@@ -16,7 +16,7 @@ def create_test_suite(lib):
     test_params = itertools.product(
         ("CFB", "OFB"), common.get_aes_test_configs())
     for mode, gen in test_params:
-        bw_if = 128
+        bw_if = 32
         bw_key = len(gen["C_KEY"]) * 4  # 2 hex chars -> 8 bits
 
         gen.update({
