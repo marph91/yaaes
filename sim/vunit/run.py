@@ -29,19 +29,13 @@ def collect_test_suites(prj):
         spec.loader.exec_module(mod)
         mod.create_test_suite(test_lib)
 
+    # add code coverage
+    prj.set_sim_option("enable_coverage", True)
+    prj.set_compile_option("enable_coverage", True)
+
     # avoid error "type of a shared variable must be a protected type"
-    ghdl_flags = ["-frelaxed"]
-    ghdl_elab_flags = ["-frelaxed"]
-
-    # add code coverage if gcc is available
-    ghdl_version = subprocess.check_output(["ghdl", "--version"]).decode()
-    if "GCC" in ghdl_version:
-        prj.set_sim_option("enable_coverage", True)
-        ghdl_flags.extend(["-g", "-fprofile-arcs", "-ftest-coverage"])
-        ghdl_elab_flags.extend(["-Wl,-lgcov", "-Wl,--coverage"])
-
-    prj.set_compile_option("ghdl.flags", ghdl_flags)
-    prj.set_sim_option("ghdl.elab_flags", ghdl_elab_flags)
+    prj.set_compile_option("ghdl.flags", ["-frelaxed"])
+    prj.set_sim_option("ghdl.elab_flags", ["-frelaxed"])
 
 
 def main():
