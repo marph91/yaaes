@@ -30,7 +30,7 @@ def collect_test_suites(prj):
         mod.create_test_suite(test_lib)
 
     # add code coverage if supported
-    if prj.simulator_supports_coverage()():
+    if prj.simulator_supports_coverage():
         prj.set_sim_option("enable_coverage", True)
         prj.set_compile_option("enable_coverage", True)
 
