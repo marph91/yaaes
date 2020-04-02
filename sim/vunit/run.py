@@ -29,13 +29,10 @@ def collect_test_suites(prj):
         spec.loader.exec_module(mod)
         mod.create_test_suite(test_lib)
 
-    # add code coverage
-    prj.set_sim_option("enable_coverage", True)
-    prj.set_compile_option("enable_coverage", True)
-
-    # avoid error "type of a shared variable must be a protected type"
-    prj.set_compile_option("ghdl.flags", ["-frelaxed"])
-    prj.set_sim_option("ghdl.elab_flags", ["-frelaxed"])
+    # add code coverage if supported
+    if prj.simulator_supports_coverage()():
+        prj.set_sim_option("enable_coverage", True)
+        prj.set_compile_option("enable_coverage", True)
 
 
 def main():
