@@ -35,12 +35,17 @@ def collect_test_suites(prj):
         prj.set_compile_option("enable_coverage", True)
 
 
+def post_run(results):
+    results.merge_coverage(file_name="coverage_data")
+    subprocess.call(["gcovr", "coverage_data"])
+
+
 def main():
     """Run all collected testsuites of the modules."""
     os.environ["VUNIT_SIMULATOR"] = "ghdl"
     prj = VUnit.from_argv()
     collect_test_suites(prj)
-    prj.main()
+    prj.main(post_run=post_run)
 
 
 if __name__ == "__main__":
