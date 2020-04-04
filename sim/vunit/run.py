@@ -37,7 +37,8 @@ def collect_test_suites(prj):
 
 def post_run(results):
     results.merge_coverage(file_name="coverage_data")
-    subprocess.call(["gcovr", "coverage_data"])
+    subprocess.call(["lcov", "--capture", "--directory", "coverage_data",
+                     "--output-file", "coverage.info"])
 
 
 def main():
