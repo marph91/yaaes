@@ -36,18 +36,14 @@ def collect_test_suites(prj):
 
 
 def post_run(results):
-    results.merge_coverage(file_name="coverage_data")
-    subprocess.call(["lcov", "--capture", "--directory", "coverage_data",
-                     "--output-file", "coverage.info"])
-
-
-def main():
-    """Run all collected testsuites of the modules."""
-    os.environ["VUNIT_SIMULATOR"] = "ghdl"
-    prj = VUnit.from_argv()
-    collect_test_suites(prj)
-    prj.main(post_run=post_run)
+    if PRJ.simulator_supports_coverage():
+        results.merge_coverage(file_name="coverage_data")
+        subprocess.call(["lcov", "--capture", "--directory", "coverage_data",
+                         "--output-file", "coverage.info"])
 
 
 if __name__ == "__main__":
-    main()
+    os.environ["VUNIT_SIMULATOR"] = "ghdl"
+    PRJ = VUnit.from_argv()
+    collect_test_suites(PRJ)
+    PRJ.main(post_run=post_run)
