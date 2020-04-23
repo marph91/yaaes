@@ -1,0 +1,27 @@
+name: synthesis
+
+on:
+  push:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  synthesis:
+    runs-on: ubuntu-latest
+    container: ghdl/synth:beta
+    steps:
+      - uses: actions/checkout@v1
+      - name: Run synthesis
+        run: |
+          ghdl -a --std=08 --work=aes_lib src/aes_pkg.vhd
+          ghdl -a --std=08 --work=aes_lib src/input_conversion.vhd
+          ghdl -a --std=08 --work=aes_lib src/output_conversion.vhd
+          ghdl -a --std=08 --work=aes_lib src/key_expansion.vhd
+          ghdl -a --std=08 --work=aes_lib src/cipher.vhd
+          ghdl -a --std=08 --work=aes_lib src/aes.vhd
+          yosys -m ghdl -p "ghdl --std=08 --work=aes_lib aes; synth_ice40 -json aes.json"
+      - name: Upload result
+        uses: actions/upload-artifact@v1
+        with:
+          name: output
+          path: remote.json
