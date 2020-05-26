@@ -22,7 +22,9 @@ Currently supported:
 
 ## Example results
 
-- Device: Xilix Zynq 7010
+The following results are obtained from a synthesis with Xilinx Vivado. For synthesis results with ghdl, yosys and nextpnr, you can check the github actions workflow.
+
+- Device: Xilinx Zynq 7010
 - Configuration: AES-256 encryption in ECB mode with an interface bitwidth of 32 bit
 - Results:
   - latency: 36 cycles (after initial key transmission)
