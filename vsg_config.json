@@ -1,0 +1,10 @@
+{
+    "file_list": [
+        "src/*.vhd"
+    ],
+    "rule": {
+        "signal_007": {
+            "disable": true
+        }
+    }
+}
