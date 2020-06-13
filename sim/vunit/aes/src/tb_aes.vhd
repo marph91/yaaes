@@ -19,31 +19,31 @@ entity tb_aes is
   generic (
     runner_cfg    : string;
 
-    C_BITWIDTH_IF : integer;
+    G_BITWIDTH_IF : integer;
 
-    C_ENCRYPTION  : integer;
-    C_MODE        : t_mode;
-    C_PLAINTEXT1  : string;
-    C_CIPHERTEXT1 : string;
-    C_PLAINTEXT2  : string;
-    C_CIPHERTEXT2 : string;
-    C_KEY         : string;
-    C_IV          : string;
-    C_BITWIDTH_KEY: integer
+    G_ENCRYPTION  : integer;
+    G_MODE        : t_mode;
+    G_PLAINTEXT1  : string;
+    G_CIPHERTEXT1 : string;
+    G_PLAINTEXT2  : string;
+    G_CIPHERTEXT2 : string;
+    G_KEY         : string;
+    G_IV          : string;
+    G_BITWIDTH_KEY: integer
   );
 end entity tb_aes;
 
 architecture rtl of tb_aes is
   constant C_CLK_PERIOD : time := 10 ns;
 
-  constant C_BITWIDTH_IV : integer range 0 to 128 := calculate_bw_iv(C_MODE);
+  constant C_BITWIDTH_IV : integer range 0 to 128 := calculate_bw_iv(G_MODE);
 
   signal sl_clk : std_logic := '0';
   signal sl_valid_in : std_logic := '0';
   signal sl_new_key_iv : std_logic := '0';
 
-  signal slv_data_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0) := (others => '0');
-  signal slv_data_out : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+  signal slv_data_in : std_logic_vector(G_BITWIDTH_IF-1 downto 0) := (others => '0');
+  signal slv_data_out : std_logic_vector(G_BITWIDTH_IF-1 downto 0);
   signal sl_valid_out : std_logic;
 
   signal sl_start,
@@ -53,11 +53,11 @@ architecture rtl of tb_aes is
 begin
   dut_aes: entity aes_lib.aes
   generic map (
-    C_BITWIDTH_IF => C_BITWIDTH_IF,
+    G_BITWIDTH_IF => G_BITWIDTH_IF,
 
-    C_ENCRYPTION => C_ENCRYPTION,
-    C_MODE => C_MODE,
-    C_BITWIDTH_KEY => C_BITWIDTH_KEY
+    G_ENCRYPTION => G_ENCRYPTION,
+    G_MODE => G_MODE,
+    G_BITWIDTH_KEY => G_BITWIDTH_KEY
   )
 	port map (
     isl_clk   => sl_clk,
@@ -82,20 +82,20 @@ begin
 
     sl_valid_in <= '1';
     -- key
-    for i in C_BITWIDTH_KEY / C_BITWIDTH_IF - 1 downto 0 loop
-      slv_data_in <= hex_to_slv(C_KEY)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+    for i in G_BITWIDTH_KEY / G_BITWIDTH_IF - 1 downto 0 loop
+      slv_data_in <= hex_to_slv(G_KEY)((i+1)*G_BITWIDTH_IF-1 downto i*G_BITWIDTH_IF);
       wait until rising_edge(sl_clk);
     end loop;
 
     -- iv
-    for i in C_BITWIDTH_IV / C_BITWIDTH_IF - 1 downto 0 loop
-      slv_data_in <= hex_to_slv(C_IV)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+    for i in C_BITWIDTH_IV / G_BITWIDTH_IF - 1 downto 0 loop
+      slv_data_in <= hex_to_slv(G_IV)((i+1)*G_BITWIDTH_IF-1 downto i*G_BITWIDTH_IF);
       wait until rising_edge(sl_clk);
     end loop;
 
     -- actual data
-    for i in 128 / C_BITWIDTH_IF - 1 downto 0 loop
-      slv_data_in <= hex_to_slv(C_PLAINTEXT1)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+    for i in 128 / G_BITWIDTH_IF - 1 downto 0 loop
+      slv_data_in <= hex_to_slv(G_PLAINTEXT1)((i+1)*G_BITWIDTH_IF-1 downto i*G_BITWIDTH_IF);
       wait until rising_edge(sl_clk);
     end loop;
 
@@ -105,8 +105,8 @@ begin
     -- next input can be started only after the output is fully done
 
     sl_valid_in <= '1';
-    for i in 128/C_BITWIDTH_IF-1 downto 0 loop
-      slv_data_in <= hex_to_slv(C_PLAINTEXT2)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF);
+    for i in 128/G_BITWIDTH_IF-1 downto 0 loop
+      slv_data_in <= hex_to_slv(G_PLAINTEXT2)((i+1)*G_BITWIDTH_IF-1 downto i*G_BITWIDTH_IF);
       -- no new key and iv needed
       wait until rising_edge(sl_clk);
     end loop;
@@ -121,14 +121,14 @@ begin
     wait until rising_edge(sl_clk) and sl_start = '1';
     sl_data_check_done <= '0';
 
-    for i in 128/C_BITWIDTH_IF-1 downto 0 loop
+    for i in 128/G_BITWIDTH_IF-1 downto 0 loop
       wait until rising_edge(sl_clk) and sl_valid_out = '1';
-      CHECK_EQUAL(slv_data_out, hex_to_slv(C_CIPHERTEXT1)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF));
+      CHECK_EQUAL(slv_data_out, hex_to_slv(G_CIPHERTEXT1)((i+1)*G_BITWIDTH_IF-1 downto i*G_BITWIDTH_IF));
     end loop;
 
-    for i in 128/C_BITWIDTH_IF-1 downto 0 loop
+    for i in 128/G_BITWIDTH_IF-1 downto 0 loop
       wait until rising_edge(sl_clk) and sl_valid_out = '1';
-      CHECK_EQUAL(slv_data_out, hex_to_slv(C_CIPHERTEXT2)((i+1)*C_BITWIDTH_IF-1 downto i*C_BITWIDTH_IF));
+      CHECK_EQUAL(slv_data_out, hex_to_slv(G_CIPHERTEXT2)((i+1)*G_BITWIDTH_IF-1 downto i*G_BITWIDTH_IF));
     end loop;
 
     report ("Done checking");

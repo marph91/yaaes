@@ -10,44 +10,44 @@ library aes_lib;
 entity AES is
   generic (
     -- bitwidth of the input/output interface (8, 32 or 128 bit)
-    C_BITWIDTH_IF  : integer range 8 to 128   := 32;
+    G_BITWIDTH_IF  : integer range 8 to 128   := 32;
 
     -- one of the AES operation modes (ECB, CBC, CFB or OFB)
-    C_MODE         : t_mode                   := ECB;
+    G_MODE         : t_mode                   := ECB;
 
     -- encryption or decryption mode
-    C_ENCRYPTION   : integer range 0 to 1     := 1;
+    G_ENCRYPTION   : integer range 0 to 1     := 1;
 
     -- bitwidth of the key, i. e. AES-128 or AES-256
-    C_BITWIDTH_KEY : integer range 128 to 256 := 256
+    G_BITWIDTH_KEY : integer range 128 to 256 := 256
   );
   port (
-    ISL_CLK         : in    std_logic;
-    ISL_VALID       : in    std_logic;
-    ISLV_PLAINTEXT  : in    std_logic_vector(C_BITWIDTH_IF - 1 downto 0);
-    ISL_NEW_KEY_IV  : in    std_logic;
-    OSLV_CIPHERTEXT : out   std_logic_vector(C_BITWIDTH_IF - 1 downto 0);
-    OSL_VALID       : out   std_logic
+    isl_clk         : in    std_logic;
+    isl_valid       : in    std_logic;
+    islv_plaintext  : in    std_logic_vector(G_BITWIDTH_IF - 1 downto 0);
+    isl_new_key_iv  : in    std_logic;
+    oslv_ciphertext : out   std_logic_vector(G_BITWIDTH_IF - 1 downto 0);
+    osl_valid       : out   std_logic
   );
 end entity AES;
 
 architecture RTL of AES is
 
-  constant c_key_words   : integer := C_BITWIDTH_KEY / 32;
+  constant C_KEY_WORDS   : integer := G_BITWIDTH_KEY / 32;
 
-  constant c_bitwidth_iv : integer range 0 to 128 := calculate_bw_iv(C_MODE);
+  constant C_BITWIDTH_IV : integer range 0 to 128 := calculate_bw_iv(G_MODE);
 
   signal sl_valid_conv       : std_logic := '0';
   signal sl_valid_cipher_out : std_logic := '0';
-  signal slv_data_out        : std_logic_vector(C_BITWIDTH_IF - 1 downto 0) := (others => '0');
-  signal a_data_conv         : t_state;
-  signal a_iv_conv           : t_state;
-  signal a_data_cipher_in    : t_state;
-  signal a_data_cipher_out   : t_state;
-  signal a_data_out          : t_state;
+  signal slv_data_out        : std_logic_vector(G_BITWIDTH_IF - 1 downto 0) := (others => '0');
+  signal a_data_conv         : st_state;
+  signal a_iv_conv           : st_state;
+  signal a_data_cipher_in    : st_state;
+  signal a_data_cipher_out   : st_state;
+  signal a_data_out          : st_state;
 
-  signal a_key_cipher_in     : t_key(0 to c_key_words - 1) := (others => (others => (others => '0')));
-  signal a_key_conv          : t_key(0 to c_key_words - 1) := (others => (others => (others => '0')));
+  signal a_key_cipher_in     : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
+  signal a_key_conv          : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
 
   signal sl_new_key_iv       : std_logic := '0';
 
@@ -55,49 +55,49 @@ begin
 
   i_input_conversion : entity aes_lib.INPUT_CONVERSION
     generic map (
-      C_BITWIDTH_IF  => C_BITWIDTH_IF,
-      C_BITWIDTH_KEY => C_BITWIDTH_KEY,
-      C_BITWIDTH_IV  => C_BITWIDTH_IV
+      G_BITWIDTH_IF  => G_BITWIDTH_IF,
+      G_BITWIDTH_KEY => G_BITWIDTH_KEY,
+      G_BITWIDTH_IV  => C_BITWIDTH_IV
     )
     port map (
-      ISL_CLK        => isl_clk,
-      ISL_VALID      => isl_valid,
-      ISLV_DATA      => islv_plaintext,
-      ISL_NEW_KEY_IV => isl_new_key_iv,
-      OA_IV          => a_iv_conv,
-      OA_KEY         => a_key_conv,
-      OA_DATA        => a_data_conv,
-      OSL_VALID      => sl_valid_conv
+      isl_clk        => isl_clk,
+      isl_valid      => isl_valid,
+      islv_data      => islv_plaintext,
+      isl_new_key_iv => isl_new_key_iv,
+      oa_iv          => a_iv_conv,
+      oa_key         => a_key_conv,
+      oa_data        => a_data_conv,
+      osl_valid      => sl_valid_conv
     );
 
   i_cipher : entity aes_lib.CIPHER
     generic map (
-      C_KEY_WORDS => C_KEY_WORDS
+      G_KEY_WORDS => C_KEY_WORDS
     )
     port map (
-      ISL_CLK   => isl_clk,
-      ISL_VALID => sl_valid_conv,
-      IA_DATA   => a_data_cipher_in,
-      IA_KEY    => a_key_cipher_in,
-      OA_DATA   => a_data_cipher_out,
-      OSL_VALID => sl_valid_cipher_out
+      isl_clk   => isl_clk,
+      isl_valid => sl_valid_conv,
+      ia_data   => a_data_cipher_in,
+      ia_key    => a_key_cipher_in,
+      oa_data   => a_data_cipher_out,
+      osl_valid => sl_valid_cipher_out
     );
 
   i_output_conversion : entity aes_lib.OUTPUT_CONVERSION
     generic map (
-      C_BITWIDTH => C_BITWIDTH_IF
+      G_BITWIDTH => G_BITWIDTH_IF
     )
     port map (
-      ISL_CLK   => isl_clk,
-      ISL_VALID => sl_valid_cipher_out,
-      IA_DATA   => a_data_out,
-      OSLV_DATA => slv_data_out,
-      OSL_VALID => osl_valid
+      isl_clk   => isl_clk,
+      isl_valid => sl_valid_cipher_out,
+      ia_data   => a_data_out,
+      oslv_data => slv_data_out,
+      osl_valid => osl_valid
     );
 
-  assert C_BITWIDTH_IF = 8 or
-    C_BITWIDTH_IF = 32 or
-    C_BITWIDTH_IF = 128 report "unsupported bitwidth " & integer'IMAGE(C_BITWIDTH_IF) severity failure;
+  assert G_BITWIDTH_IF = 8 or
+    G_BITWIDTH_IF = 32 or
+    G_BITWIDTH_IF = 128 report "unsupported bitwidth " & integer'IMAGE(G_BITWIDTH_IF) severity failure;
 
   PROC_CHAIN : process (isl_clk) is
   begin
@@ -113,16 +113,16 @@ begin
 
   end process PROC_CHAIN;
 
-  GEN_ENCRYPTION : if C_ENCRYPTION = 1 generate
+  GEN_ENCRYPTION : if G_ENCRYPTION = 1 generate
 
-    GEN_ECB : if C_MODE = ECB generate
+    GEN_ECB : if G_MODE = ECB generate
       a_data_cipher_in <= a_data_conv;
       a_key_cipher_in  <= a_key_conv;
       a_data_out       <= a_data_cipher_out;
       oslv_ciphertext  <= slv_data_out;
     end generate GEN_ECB;
 
-    GEN_CBC : if C_MODE = CBC generate
+    GEN_CBC : if G_MODE = CBC generate
       a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_new_key_iv = '0'
                           else
                           xor_array(a_iv_conv, a_data_conv);
@@ -131,7 +131,7 @@ begin
       oslv_ciphertext  <= slv_data_out;
     end generate GEN_CBC;
 
-    GEN_CFB : if C_MODE = CFB generate
+    GEN_CFB : if G_MODE = CFB generate
 
       PROC_CIPHER_IN : process (isl_clk) is
       begin
@@ -151,7 +151,7 @@ begin
       oslv_ciphertext <= slv_data_out;
     end generate GEN_CFB;
 
-    GEN_OFB : if C_MODE = OFB generate
+    GEN_OFB : if G_MODE = OFB generate
       a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else
                           a_iv_conv;
       a_key_cipher_in  <= a_key_conv;
@@ -159,16 +159,16 @@ begin
       oslv_ciphertext  <= slv_data_out;
     end generate GEN_OFB;
 
-    GEN_CTR : if C_MODE = CTR generate
+    GEN_CTR : if G_MODE = CTR generate
       -- TODO: add counter mode, as described in: "NIST SP 800-38A"
     end generate GEN_CTR;
 
   end generate GEN_ENCRYPTION;
 
-  GEN_DECRYPTION : if C_ENCRYPTION = 0 generate
+  GEN_DECRYPTION : if G_ENCRYPTION = 0 generate
     -- TODO: add decryption, respectively inverse cipher, as described in: "NIST FIPS 197, 5.3 Inverse Cipher"
 
-    GEN_CFB : if C_MODE = CFB generate
+    GEN_CFB : if G_MODE = CFB generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
       PROC_CIPHER_IN : process (isl_clk) is
@@ -189,7 +189,7 @@ begin
       oslv_ciphertext <= slv_data_out;
     end generate GEN_CFB;
 
-    GEN_OFB : if C_MODE = OFB generate
+    GEN_OFB : if G_MODE = OFB generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
       a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else

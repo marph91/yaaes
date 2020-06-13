@@ -13,9 +13,9 @@ def create_test_suite(lib):
                                                   (128, 256),
                                                   (0, 128)):
         gen = {
-            "C_BITWIDTH_IF": bw_if,
-            "C_BITWIDTH_KEY": bw_key,
-            "C_BITWIDTH_IV": bw_iv,
+            "G_BITWIDTH_IF": bw_if,
+            "G_BITWIDTH_KEY": bw_key,
+            "G_BITWIDTH_IV": bw_iv,
         }
         tb_input_conversion.add_config(
             name=f"bw_if_{bw_if}_bw_key_{bw_key}_bw_iv_{bw_iv}", generics=gen)

@@ -17,13 +17,13 @@ def create_test_suite(lib):
         ("CFB", "OFB"), common.get_aes_test_configs())
     for mode, gen in test_params:
         bw_if = 32
-        bw_key = len(gen["C_KEY"]) * 4  # 2 hex chars -> 8 bits
+        bw_key = len(gen["G_KEY"]) * 4  # 2 hex chars -> 8 bits
 
         gen.update({
-            "C_BITWIDTH_IF": bw_if,
-            "C_BITWIDTH_KEY": bw_key,
-            "C_MODE": mode,
-            "C_IV": common.random_hex(32),
+            "G_BITWIDTH_IF": bw_if,
+            "G_BITWIDTH_KEY": bw_key,
+            "G_MODE": mode,
+            "G_IV": common.random_hex(32),
         })
         tb_aes.add_config(
             name="aes_%d_mode_%s_bw_%d_input_%s" % (

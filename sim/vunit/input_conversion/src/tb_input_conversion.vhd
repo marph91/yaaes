@@ -18,9 +18,9 @@ library vunit_lib;
 entity tb_input_conversion is
   generic (
     runner_cfg     : string;
-    C_BITWIDTH_IF  : integer;
-    C_BITWIDTH_KEY : integer;
-    C_BITWIDTH_IV  : integer
+    G_BITWIDTH_IF  : integer;
+    G_BITWIDTH_KEY : integer;
+    G_BITWIDTH_IV  : integer
   );
 end entity tb_input_conversion;
 
@@ -29,19 +29,19 @@ architecture rtl of tb_input_conversion is
 
   signal sl_clk : std_logic := '0';
 
-  signal slv_data_in : std_logic_vector(C_BITWIDTH_IF-1 downto 0);
+  signal slv_data_in : std_logic_vector(G_BITWIDTH_IF-1 downto 0);
   signal a_iv_out,
-         a_data_out : t_state;
-  signal a_key_out : t_key(0 to C_BITWIDTH_KEY/32-1);
+         a_data_out : st_state;
+  signal a_key_out : t_key(0 to G_BITWIDTH_KEY/32-1);
   signal sl_valid_in,
          sl_valid_out : std_logic;
   signal sl_new_key_iv : std_logic := '0';
 
-  signal a_data_ref : t_state := ((x"00", x"04", x"08", x"0C"),
+  signal a_data_ref : st_state := ((x"00", x"04", x"08", x"0C"),
                                   (x"01", x"05", x"09", x"0D"),
                                   (x"02", x"06", x"0A", x"0E"),
                                   (x"03", x"07", x"0B", x"0F"));
-  signal a_data_ref2 : t_state := ((x"FF", x"EF", x"DF", x"CF"),
+  signal a_data_ref2 : st_state := ((x"FF", x"EF", x"DF", x"CF"),
                                    (x"BF", x"AF", x"9F", x"8F"),
                                    (x"7F", x"6F", x"5F", x"4F"),
                                    (x"3F", x"2F", x"1F", x"0F"));
@@ -54,9 +54,9 @@ architecture rtl of tb_input_conversion is
 begin
   dut_input_conversion: entity aes_lib.input_conversion
   generic map (
-    C_BITWIDTH_IF  => C_BITWIDTH_IF,
-    C_BITWIDTH_KEY => C_BITWIDTH_KEY,
-    C_BITWIDTH_IV  => C_BITWIDTH_IV
+    G_BITWIDTH_IF  => G_BITWIDTH_IF,
+    G_BITWIDTH_KEY => G_BITWIDTH_KEY,
+    G_BITWIDTH_IV  => G_BITWIDTH_IV
   )
 	port map (
     isl_clk       => sl_clk,
@@ -82,29 +82,29 @@ begin
     sl_valid_in <= '1';
 
     -- key
-    for i in 0 to C_BITWIDTH_KEY / C_BITWIDTH_IF - 1 loop
-      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+    for i in 0 to G_BITWIDTH_KEY / G_BITWIDTH_IF - 1 loop
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
 
-      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
-                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-G_BITWIDTH_IF downto slv_data_ref'LOW)
+                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
       wait until rising_edge(sl_clk);
     end loop;
 
     -- initialization vector (iv)
-    for i in 0 to C_BITWIDTH_IV / C_BITWIDTH_IF - 1 loop
-      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+    for i in 0 to G_BITWIDTH_IV / G_BITWIDTH_IF - 1 loop
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
 
-      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
-                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-G_BITWIDTH_IF downto slv_data_ref'LOW)
+                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
       wait until rising_edge(sl_clk);
     end loop;
 
     -- actual data
-    for i in 0 to 128 / C_BITWIDTH_IF - 1 loop
-      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+    for i in 0 to 128 / G_BITWIDTH_IF - 1 loop
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
 
-      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
-                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-G_BITWIDTH_IF downto slv_data_ref'LOW)
+                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
       wait until rising_edge(sl_clk);
     end loop;
 
@@ -120,11 +120,11 @@ begin
 
     -- second data input
     sl_valid_in <= '1';
-    for i in 0 to 128 / C_BITWIDTH_IF - 1 loop
-      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+    for i in 0 to 128 / G_BITWIDTH_IF - 1 loop
+      slv_data_in <= slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
 
-      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-C_BITWIDTH_IF downto slv_data_ref'LOW)
-                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-C_BITWIDTH_IF+1);
+      slv_data_ref <= slv_data_ref(slv_data_ref'HIGH-G_BITWIDTH_IF downto slv_data_ref'LOW)
+                      & slv_data_ref(slv_data_ref'HIGH downto slv_data_ref'HIGH-G_BITWIDTH_IF+1);
       wait until rising_edge(sl_clk);
     end loop;
 
@@ -147,7 +147,7 @@ begin
         report "row: " & to_string(row) & ", col: " & to_string(col);
         CHECK_EQUAL(a_data_out(row, col), a_data_ref(col, row), "data");
         CHECK_EQUAL(a_key_out(row)(col), a_data_ref(row, col), "key");
-        if C_BITWIDTH_IV /= 0 then
+        if G_BITWIDTH_IV /= 0 then
           CHECK_EQUAL(a_iv_out(row, col), a_data_ref(col, row), "iv");
         else
           CHECK_EQUAL(a_iv_out(row, col), 0, "iv");

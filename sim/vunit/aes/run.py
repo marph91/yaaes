@@ -78,21 +78,21 @@ def create_test_suite(lib):
         encr_str = "encrypt" if encryption else "decrypt"
         encr_func = encrypt if encryption else decrypt
         bw_if = 32
-        bw_key = len(gen["C_KEY"]) * 4  # 2 hex chars -> 8 bits
+        bw_key = len(gen["G_KEY"]) * 4  # 2 hex chars -> 8 bits
         init_vector = common.random_hex(32)
 
         ciphertext1, iv2 = encr_func(
-            gen["C_PLAINTEXT1"], gen["C_KEY"], init_vector, mode)
+            gen["G_PLAINTEXT1"], gen["G_KEY"], init_vector, mode)
         ciphertext2, _ = encr_func(
-            gen["C_PLAINTEXT2"], gen["C_KEY"], iv2, mode)
+            gen["G_PLAINTEXT2"], gen["G_KEY"], iv2, mode)
         gen.update({
-            "C_ENCRYPTION": encryption,
-            "C_BITWIDTH_IF": bw_if,
-            "C_BITWIDTH_KEY": bw_key,
-            "C_MODE": mode,
-            "C_CIPHERTEXT1": ciphertext1,
-            "C_CIPHERTEXT2": ciphertext2,
-            "C_IV": init_vector,
+            "G_ENCRYPTION": encryption,
+            "G_BITWIDTH_IF": bw_if,
+            "G_BITWIDTH_KEY": bw_key,
+            "G_MODE": mode,
+            "G_CIPHERTEXT1": ciphertext1,
+            "G_CIPHERTEXT2": ciphertext2,
+            "G_IV": init_vector,
         })
         generics = {k: v for k, v in gen.items() if k != "input"}
         tb_aes.add_config(

@@ -9,15 +9,15 @@ library aes_lib;
 
 entity CIPHER is
   generic (
-    C_KEY_WORDS : integer := 4
+    G_KEY_WORDS : integer := 4
   );
   port (
-    ISL_CLK   : in    std_logic;
-    ISL_VALID : in    std_logic;
-    IA_DATA   : in    t_state;
-    IA_KEY    : in    t_key(0 to C_KEY_WORDS - 1);
-    OA_DATA   : out   t_state;
-    OSL_VALID : out   std_logic
+    isl_clk   : in    std_logic;
+    isl_valid : in    std_logic;
+    ia_data   : in    st_state;
+    ia_key    : in    t_key(0 to G_KEY_WORDS - 1);
+    oa_data   : out   st_state;
+    osl_valid : out   std_logic
   );
 end entity CIPHER;
 
@@ -33,12 +33,12 @@ architecture RTL of CIPHER is
   -- data format in key expansion: words are rows
   -- data format in cipher: words are columns
   -- conversion: transpose matrix
-  signal a_data_in     : t_state;
-  signal a_data_added  : t_state;
-  signal a_data_srows  : t_state;
+  signal a_data_in     : st_state;
+  signal a_data_added  : st_state;
+  signal a_data_srows  : st_state;
 
   -- keys
-  signal a_round_keys  : t_state;
+  signal a_round_keys  : st_state;
   signal int_round_cnt : integer range 0 to 13 := 0;
 
 begin
@@ -47,21 +47,21 @@ begin
 
   i_key_expansion : entity aes_lib.KEY_EXPANSION
     generic map (
-      C_KEY_WORDS   => C_KEY_WORDS
+      G_KEY_WORDS   => G_KEY_WORDS
     )
     port map (
-      ISL_CLK       => isl_clk,
-      ISL_NEXT_KEY  => sl_next_round,
-      ISL_VALID     => isl_valid,
-      IA_DATA       => ia_key,
-      OA_DATA       => a_round_keys
+      isl_clk       => isl_clk,
+      isl_next_key  => sl_next_round,
+      isl_valid     => isl_valid,
+      ia_data       => ia_key,
+      oa_data       => a_round_keys
     );
 
   PROC_KEY_EXPANSION : process (isl_clk) is
 
     variable v_new_col    : integer range 0 to C_STATE_COLS - 1;
-    variable v_data_sbox  : t_state;
-    variable v_data_mcols : t_state;
+    variable v_data_sbox  : st_state;
+    variable v_data_mcols : st_state;
 
   begin
 
@@ -91,7 +91,7 @@ begin
 
         -- if the second last round is finished, mix columns step could be skipped,
         -- but like this, the pipeline doesn't branch
-        if (int_round_cnt < 6 + C_KEY_WORDS - 1) then
+        if (int_round_cnt < 6 + G_KEY_WORDS - 1) then
           int_round_cnt <= int_round_cnt + 1;
         else
           sl_last_round <= '1';

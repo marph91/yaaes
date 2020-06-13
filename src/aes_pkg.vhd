@@ -11,17 +11,17 @@ package AES_PKG is
 
   type t_usig_2d is array(natural range <>, natural range <>) of unsigned(7 downto 0);
 
-  constant c_state_rows : integer := 4;
-  constant c_state_cols : integer := 4;
+  constant C_STATE_ROWS : integer := 4;
+  constant C_STATE_COLS : integer := 4;
 
-  subtype t_word is t_usig_1d(0 to C_STATE_COLS - 1);
-  subtype t_state is t_usig_2d(0 to C_STATE_ROWS - 1, 0 to C_STATE_COLS - 1);
-  subtype t_sbox is t_usig_1d(0 to 255);
+  subtype st_word is t_usig_1d(0 to C_STATE_COLS - 1);
+  subtype st_state is t_usig_2d(0 to C_STATE_ROWS - 1, 0 to C_STATE_COLS - 1);
+  subtype st_sbox is t_usig_1d(0 to 255);
 
-  type t_key is array(natural range <>) of t_word;
+  type t_key is array(natural range <>) of st_word;
 
   -- substitution box, as defined in: "FIPS 197, Figure 7. S-box"
-  constant c_sbox : t_sbox := (
+  constant C_SBOX : st_sbox := (
     x"63", x"7c", x"77", x"7b", x"f2", x"6b", x"6f", x"c5", x"30", x"01", x"67", x"2b", x"fe", x"d7", x"ab", x"76",
     x"ca", x"82", x"c9", x"7d", x"fa", x"59", x"47", x"f0", x"ad", x"d4", x"a2", x"af", x"9c", x"a4", x"72", x"c0",
     x"b7", x"fd", x"93", x"26", x"36", x"3f", x"f7", x"cc", x"34", x"a5", x"e5", x"f1", x"71", x"d8", x"31", x"15",
@@ -43,23 +43,23 @@ package AES_PKG is
 
   function triple (value : unsigned(7 downto 0)) return unsigned;
 
-  function xor_array (a, b : t_state) return t_state;
+  function xor_array (a, b : st_state) return st_state;
 
   function calculate_bw_iv (mode : t_mode) return integer;
 
-  function type_state_to_key (arr_in : t_state) return t_key;
+  function type_state_to_key (arr_in : st_state) return t_key;
 
-  function type_key_to_state (arr_in : t_key(0 to 3)) return t_state;
+  function type_key_to_state (arr_in : t_key(0 to 3)) return st_state;
 
-  function transpose (arr_in : t_state) return t_state;
+  function transpose (arr_in : st_state) return st_state;
 
-  function transpose (arr_in : t_key(0 to 3)) return t_state;
+  function transpose (arr_in : t_key(0 to 3)) return st_state;
 
-  function slv_to_state_array (vec : std_logic_vector(127 downto 0)) return t_state;
+  function slv_to_state_array (vec : std_logic_vector(127 downto 0)) return st_state;
 
   function slv_to_key_array (vec : std_logic_vector) return t_key;
 
-  function array_to_slv (arr : t_state) return std_logic_vector;
+  function array_to_slv (arr : st_state) return std_logic_vector;
 
 end package AES_PKG;
 
@@ -89,8 +89,8 @@ package body aes_pkg is
 
   -- xor two arrays
 
-  function xor_array (a, b : t_state) return t_state is
-    variable c : t_state;
+  function xor_array (a, b : st_state) return st_state is
+    variable c : st_state;
   begin
     assert a'LENGTH(1) = b'LENGTH(1);
     assert a'LENGTH(2) = b'LENGTH(2);
@@ -120,7 +120,7 @@ package body aes_pkg is
 
   -- convert an array of type "state" to type "key"
 
-  function type_state_to_key (arr_in : t_state) return t_key is
+  function type_state_to_key (arr_in : st_state) return t_key is
     variable arr_out : t_key(0 to 3);
   begin
     for row in arr_in'RANGE(1) loop
@@ -133,8 +133,8 @@ package body aes_pkg is
 
   -- convert an array of type "key" to type "state"
 
-  function type_key_to_state (arr_in : t_key(0 to 3)) return t_state is
-    variable arr_out : t_state;
+  function type_key_to_state (arr_in : t_key(0 to 3)) return st_state is
+    variable arr_out : st_state;
   begin
     for row in arr_out'RANGE(1) loop
       for col in arr_out'RANGE(2) loop
@@ -146,8 +146,8 @@ package body aes_pkg is
 
   -- transpose an array
 
-  function transpose (arr_in : t_state) return t_state is
-    variable arr_out : t_state;
+  function transpose (arr_in : st_state) return st_state is
+    variable arr_out : st_state;
   begin
     for row in arr_in'RANGE(1) loop
       for col in arr_in'RANGE(2) loop
@@ -157,8 +157,8 @@ package body aes_pkg is
     return arr_out;
   end function;
 
-  function transpose (arr_in : t_key(0 to 3)) return t_state is
-    variable arr_out : t_state;
+  function transpose (arr_in : t_key(0 to 3)) return st_state is
+    variable arr_out : st_state;
   begin
     for row in arr_out'RANGE(1) loop
       for col in arr_out'RANGE(2) loop
@@ -170,8 +170,8 @@ package body aes_pkg is
 
   -- convert a std_logic_vector to an array
 
-  function slv_to_state_array (vec : std_logic_vector(127 downto 0)) return t_state is
-    variable arr : t_state;
+  function slv_to_state_array (vec : std_logic_vector(127 downto 0)) return st_state is
+    variable arr : st_state;
     variable vec_high : integer;
     variable vec_low : integer;
   begin
@@ -202,7 +202,7 @@ package body aes_pkg is
 
   -- convert an array to a std_logic_vector
 
-  function array_to_slv (arr : t_state) return std_logic_vector is
+  function array_to_slv (arr : st_state) return std_logic_vector is
     variable vec : std_logic_vector(127 downto 0);
     variable vec_high : integer;
     variable vec_low : integer;

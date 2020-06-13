@@ -11,21 +11,21 @@ library aes_lib;
 
 entity OUTPUT_CONVERSION is
   generic (
-    C_BITWIDTH : integer range 8 to 128 := 128
+    G_BITWIDTH : integer range 8 to 128 := 128
   );
   port (
-    ISL_CLK         : in    std_logic;
-    ISL_VALID       : in    std_logic;
-    IA_DATA         : in    t_state;
-    OSLV_DATA       : out   std_logic_vector(C_BITWIDTH - 1 downto 0);
-    OSL_VALID       : out   std_logic
+    isl_clk         : in    std_logic;
+    isl_valid       : in    std_logic;
+    ia_data         : in    st_state;
+    oslv_data       : out   std_logic_vector(G_BITWIDTH - 1 downto 0);
+    osl_valid       : out   std_logic
   );
 end entity OUTPUT_CONVERSION;
 
 architecture RTL of OUTPUT_CONVERSION is
 
-  constant c_total_datums : integer := 128 / C_BITWIDTH;
-  signal int_output_cnt     : integer range 0 to c_total_datums := 0;
+  constant C_TOTAL_DATUMS : integer := 128 / G_BITWIDTH;
+  signal int_output_cnt     : integer range 0 to C_TOTAL_DATUMS := 0;
 
   signal sl_output_valid    : std_logic := '0';
   signal sl_output_valid_d1 : std_logic := '0';
@@ -46,16 +46,16 @@ begin
       end if;
 
       if (sl_output_valid = '1') then
-        if (int_output_cnt < c_total_datums - 1) then
+        if (int_output_cnt < C_TOTAL_DATUMS - 1) then
           int_output_cnt <= int_output_cnt + 1;
         else
           sl_output_valid <= '0';
           int_output_cnt  <= 0;
         end if;
 
-        oslv_data <= slv_data(slv_data'HIGH downto slv_data'HIGH - C_BITWIDTH + 1);
-        slv_data  <= slv_data(slv_data'HIGH - C_BITWIDTH downto slv_data'LOW) &
-                     slv_data(slv_data'HIGH downto slv_data'HIGH - C_BITWIDTH + 1);
+        oslv_data <= slv_data(slv_data'HIGH downto slv_data'HIGH - G_BITWIDTH + 1);
+        slv_data  <= slv_data(slv_data'HIGH - G_BITWIDTH downto slv_data'LOW) &
+                     slv_data(slv_data'HIGH downto slv_data'HIGH - G_BITWIDTH + 1);
       end if;
     end if;
 

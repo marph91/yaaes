@@ -8,5 +8,5 @@ def create_test_suite(lib):
     tb_output_conversion = lib.entity("tb_output_conversion")
 
     for bw_if in [8, 32, 128]:
-        gen = {"C_BITWIDTH": bw_if}
+        gen = {"G_BITWIDTH": bw_if}
         tb_output_conversion.add_config(name="bw=%d" % bw_if, generics=gen)

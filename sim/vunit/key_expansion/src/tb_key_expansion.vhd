@@ -18,9 +18,9 @@ library vunit_lib;
 entity tb_key_expansion is
   generic (
     runner_cfg    : string;
-    C_BITWIDTH    : integer;
+    G_BITWIDTH    : integer;
 
-    C_KEY_WORDS   : integer
+    G_KEY_WORDS   : integer
   );
 end entity tb_key_expansion;
 
@@ -31,9 +31,9 @@ architecture rtl of tb_key_expansion is
   signal sl_valid_in,
          sl_next_key : std_logic := '0';
 
-  signal a_key_in : t_key(0 to C_KEY_WORDS-1);
-  signal a_key_ref : t_state;
-  signal a_key_out : t_state;
+  signal a_key_in : t_key(0 to G_KEY_WORDS-1);
+  signal a_key_ref : st_state;
+  signal a_key_out : st_state;
 
   signal sl_start,
          sl_data_check_done,
@@ -42,7 +42,7 @@ architecture rtl of tb_key_expansion is
 begin
   dut_key_expansion: entity aes_lib.key_expansion
   generic map(
-    C_KEY_WORDS => C_KEY_WORDS
+    G_KEY_WORDS => G_KEY_WORDS
   )
 	port map (
     isl_clk => sl_clk,
@@ -75,7 +75,7 @@ begin
     wait;
   end process;
 
-  proc_assign_data: if C_KEY_WORDS = 4 generate
+  proc_assign_data: if G_KEY_WORDS = 4 generate
     a_key_in <= ((x"2b", x"7e", x"15", x"16"),
                  (x"28", x"ae", x"d2", x"a6"),
                  (x"ab", x"f7", x"15", x"88"),
@@ -125,7 +125,7 @@ begin
     -- AES-128: 10 rounds -> i. e. "isl_valid" + 9 times "sl_next_key"
     -- AES-192: 12 rounds
     -- AES-256: 14 rounds
-    for i in 0 to 6+C_KEY_WORDS-2 loop
+    for i in 0 to 6+G_KEY_WORDS-2 loop
       wait until rising_edge(sl_clk);
       sl_next_key <= '1';
       wait until rising_edge(sl_clk);
