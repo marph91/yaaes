@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     container: ghdl/synth:beta
     steps:
-      - uses: actions/checkout@v1
+      - uses: actions/checkout@v2
       - name: Run synthesis
         run: |
           ghdl -a --std=08 --work=aes_lib src/aes_pkg.vhd
@@ -21,7 +21,7 @@ jobs:
           ghdl -a --std=08 --work=aes_lib src/aes.vhd
           yosys -m ghdl -p "ghdl --std=08 --work=aes_lib aes; synth_ice40 -json aes.json"
       - name: Upload result
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: output
           path: aes.json
