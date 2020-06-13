@@ -17,4 +17,4 @@ jobs:
       - name: Install dependencies
         run: pip install vsg
       - name: Run vhdl code style check
-        run: vsg --configuration vsg_config.json
+        run: vsg --configuration vsg_config.yaml
