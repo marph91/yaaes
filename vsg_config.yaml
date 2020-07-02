@@ -1,6 +1,8 @@
 file_list:
   - src/*.vhd
 rule:
+  global:
+    indentSize: 2
   constant_004: # names
     case: upper
   constant_015: # prefix
