@@ -100,24 +100,7 @@ begin
 
       -- mix columns and add key
       if (slv_stage(2) = '1') then
-        for col in 0 to C_STATE_COLS - 1 loop
-          v_data_mcols(0, col) := double(a_data_srows(0, col)) xor
-                                  triple(a_data_srows(1, col)) xor
-                                  a_data_srows(2, col) xor
-                                  a_data_srows(3, col);
-          v_data_mcols(1, col) := a_data_srows(0, col) xor
-                                  double(a_data_srows(1, col)) xor
-                                  triple(a_data_srows(2, col)) xor
-                                  a_data_srows(3, col);
-          v_data_mcols(2, col) := a_data_srows(0, col) xor
-                                  a_data_srows(1, col) xor
-                                  double(a_data_srows(2, col)) xor
-                                  triple(a_data_srows(3, col));
-          v_data_mcols(3, col) := triple(a_data_srows(0, col)) xor
-                                  a_data_srows(1, col) xor
-                                  a_data_srows(2, col) xor
-                                  double(a_data_srows(3, col));
-        end loop;
+        v_data_mcols := mix_columns(a_data_srows);
 
         -- add key
         if (sl_last_round = '0') then

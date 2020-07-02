@@ -39,10 +39,6 @@ package AES_PKG is
     x"e1", x"f8", x"98", x"11", x"69", x"d9", x"8e", x"94", x"9b", x"1e", x"87", x"e9", x"ce", x"55", x"28", x"df",
   x"8c", x"a1", x"89", x"0d", x"bf", x"e6", x"42", x"68", x"41", x"99", x"2d", x"0f", x"b0", x"54", x"bb", x"16");
 
-  function double (value : unsigned(7 downto 0)) return unsigned;
-
-  function triple (value : unsigned(7 downto 0)) return unsigned;
-
   function xor_array (a, b : st_state) return st_state;
 
   function calculate_bw_iv (mode : t_mode) return integer;
@@ -61,31 +57,15 @@ package AES_PKG is
 
   function array_to_slv (arr : st_state) return std_logic_vector;
 
+  function multiply_polynomial (lhs : unsigned(7 downto 0); rhs : unsigned(7 downto 0)) return unsigned;
+
+  function mix_columns (a_in : st_state) return st_state;
+
+  function inv_mix_columns (a_in : st_state) return st_state;
+
 end package AES_PKG;
 
 package body aes_pkg is
-
-  -- calculate the double of a value, as described in: "FIPS 197, 4.2.1 Multiplication by x"
-
-  function double (value : unsigned(7 downto 0)) return unsigned is
-    variable doubled_value : unsigned(7 downto 0);
-
-  begin
-    doubled_value := value(6 downto 0) & '0';
-
-    if (value(7) = '1') then
-      doubled_value := doubled_value xor x"1b";
-    end if;
-
-    return doubled_value;
-  end double;
-
-  -- calculate the triple of a value, as described in: "FIPS 197, 4.2.1 Multiplication by x"
-
-  function triple (value : unsigned(7 downto 0)) return unsigned is
-  begin
-    return value xor double(value);
-  end triple;
 
   -- xor two arrays
 
@@ -216,5 +196,112 @@ package body aes_pkg is
     end loop;
     return vec;
   end function array_to_slv;
+
+  -- cipher helper functions
+
+  -- reduce a polynomial, as described in: "FIPS 197, 4.2.1 Multiplication by x"
+
+  function xtime (value : unsigned(7 downto 0)) return unsigned is
+    variable doubled_value : unsigned(7 downto 0);
+
+  begin
+    doubled_value := value(6 downto 0) & '0';
+
+    if (value(7) = '1') then
+      doubled_value := doubled_value xor x"1b";
+    end if;
+
+    return doubled_value;
+  end xtime;
+
+  -- multiply polynomials, as described in: "FIPS 197, 4.2.1 Multiplication by x"
+
+  function multiply_polynomial (lhs : unsigned(7 downto 0); rhs : unsigned(7 downto 0)) return unsigned is
+    variable product : unsigned(7 downto 0);
+  begin
+    -- TODO: generalize the function
+    -- for the implementation see also:
+    -- https://crypto.stackexchange.com/questions/2569/how-does-one-implement-the-inverse-of-aes-mixcolumns
+    case rhs is
+
+      when x"02" =>
+        product := xtime(lhs);
+      when x"03" =>
+        product := lhs xor xtime(lhs);
+      when x"04" =>
+        product := xtime(xtime(lhs));
+      when x"08" =>
+        product := xtime(xtime(xtime(lhs)));
+      when x"09" =>
+        product := lhs xor xtime(xtime(xtime(lhs)));
+      when x"0b" =>
+        product := lhs xor xtime(lhs xor xtime(xtime(lhs)));
+      when x"0d" =>
+        product := lhs xor xtime(xtime(lhs xor xtime(lhs)));
+      when x"0e" =>
+        product := xtime(lhs xor xtime(lhs xor xtime(lhs)));
+      when x"10" =>
+        product := xtime(xtime(xtime(xtime(lhs))));
+      when x"13" =>
+        product := lhs xor xtime(lhs) xor xtime(xtime(xtime(xtime(lhs))));
+      when others =>
+        assert false report "polynomial not supported";
+
+    end case;
+
+    return product;
+  end multiply_polynomial;
+
+  -- FIPS 197, 5.1.3 MixColumns() Transformation
+
+  function mix_columns (a_in : st_state) return st_state is
+    variable a_out : st_state;
+  begin
+    for col in 0 to C_STATE_COLS - 1 loop
+      a_out(0, col) := multiply_polynomial(a_in(0, col), x"02") xor
+                       multiply_polynomial(a_in(1, col), x"03") xor
+                       a_in(2, col) xor
+                       a_in(3, col);
+      a_out(1, col) := a_in(0, col) xor
+                       multiply_polynomial(a_in(1, col), x"02") xor
+                       multiply_polynomial(a_in(2, col), x"03") xor
+                       a_in(3, col);
+      a_out(2, col) := a_in(0, col) xor
+                       a_in(1, col) xor
+                       multiply_polynomial(a_in(2, col), x"02") xor
+                       multiply_polynomial(a_in(3, col), x"03");
+      a_out(3, col) := multiply_polynomial(a_in(0, col), x"03") xor
+                       a_in(1, col) xor
+                       a_in(2, col) xor
+                       multiply_polynomial(a_in(3, col), x"02");
+    end loop;
+    return a_out;
+  end mix_columns;
+
+  -- FIPS 197, 5.3.3 InvMixColumns() Transformation
+
+  function inv_mix_columns (a_in : st_state) return st_state is
+    variable a_out : st_state;
+  begin
+    for col in 0 to C_STATE_COLS - 1 loop
+      a_out(0, col) := multiply_polynomial(a_in(0, col), x"0e") xor
+                       multiply_polynomial(a_in(1, col), x"0b") xor
+                       multiply_polynomial(a_in(2, col), x"0d") xor
+                       multiply_polynomial(a_in(3, col), x"09");
+      a_out(1, col) := multiply_polynomial(a_in(0, col), x"09") xor
+                       multiply_polynomial(a_in(1, col), x"0e") xor
+                       multiply_polynomial(a_in(2, col), x"0b") xor
+                       multiply_polynomial(a_in(3, col), x"0d");
+      a_out(2, col) := multiply_polynomial(a_in(0, col), x"0d") xor
+                       multiply_polynomial(a_in(1, col), x"09") xor
+                       multiply_polynomial(a_in(2, col), x"0e") xor
+                       multiply_polynomial(a_in(3, col), x"0b");
+      a_out(3, col) := multiply_polynomial(a_in(0, col), x"0b") xor
+                       multiply_polynomial(a_in(1, col), x"0d") xor
+                       multiply_polynomial(a_in(2, col), x"09") xor
+                       multiply_polynomial(a_in(3, col), x"0e");
+    end loop;
+    return a_out;
+  end inv_mix_columns;
 
 end package body;

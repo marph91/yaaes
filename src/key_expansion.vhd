@@ -94,7 +94,7 @@ begin
           end loop;
 
           -- calculate round constant for the next round, as defined in: "FIPS 197, 5.2 Key Expansion"
-          a_rcon(0) <= double(a_rcon(0));
+          a_rcon(0) <= multiply_polynomial(a_rcon(0), x"02");
 
           -- xor last word
           -- oldest word is v_data_out(0), new words get appended
