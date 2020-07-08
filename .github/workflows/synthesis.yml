@@ -12,6 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run synthesis
+        continue-on-error: true
         run: |
           ghdl -a --std=08 --work=aes_lib src/aes_pkg.vhd
           ghdl -a --std=08 --work=aes_lib src/input_conversion.vhd

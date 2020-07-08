@@ -2,10 +2,9 @@
 
 [![testsuite](https://github.com/marph91/yaaes/workflows/testsuite/badge.svg)](https://github.com/marph91/yaaes/actions?query=workflow%3Atestsuite)
 [![codecov](https://codecov.io/gh/marph91/yaaes/branch/master/graph/badge.svg)](https://codecov.io/gh/marph91/yaaes)
-[![synthesis](https://github.com/marph91/yaaes/workflows/synthesis/badge.svg)](https://github.com/marph91/yaaes/actions?query=workflow%3Asynthesis)
 [![vhdl_style](https://github.com/marph91/yaaes/workflows/vhdl_style/badge.svg)](https://github.com/marph91/yaaes/actions?query=workflow%3Avhdl_style)
 
-VHDL implementation of the symmetric block cipher AES, as specified in the NIST FIPS 197, respectively NIST SP 800-38A.
+VHDL implementation of the symmetric block cipher AES, as specified in the [NIST FIPS 197](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf), respectively [NIST SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
 
 Currently supported:
 
@@ -32,10 +31,6 @@ The following results are obtained from a synthesis with Xilinx Vivado. For synt
   - 1353 LUT, 1242 FF
   - 0.171 ns worst negative slack at 200 MHz
 
-## Requirements for running the testbenches
+## Testsuite
 
-- GHDL: <https://github.com/tgingold/ghdl>
-- VUnit: <https://github.com/vunit/vunit>
-- Pycryptodome: <https://github.com/Legrandin/pycryptodome>
-
-To run the testsuite, simply execute `cd sim/vunit && ./run.py`.
+The requirements for running the testsuite are [GHDL](https://github.com/tgingold/ghdl), [VUnit](https://github.com/vunit/vunit) and [Pycryptodome](https://github.com/Legrandin/pycryptodome). To run the testsuite itself, simply execute `cd sim/vunit && ./run.py`.
