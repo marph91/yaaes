@@ -195,7 +195,7 @@ package body aes_pkg is
       end loop;
     end loop;
     return vec;
-  end function array_to_slv;
+  end function;
 
   -- cipher helper functions
 

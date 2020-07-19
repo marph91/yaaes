@@ -124,6 +124,6 @@ package body vunit_common_pkg is
       v_slv(i * 4 - 1 downto (i - 1) * 4) := v_hex;
     end loop;
     return v_slv;
-  end function hex_to_slv;
+  end function;
 
 end package body;

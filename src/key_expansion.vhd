@@ -28,6 +28,23 @@ architecture rtl of key_expansion is
 
   signal sl_short_round : std_logic := '0';
 
+  -- After executing a full/short key expansion routine,
+  -- the next words are derived by xoring with previous words.
+
+  function xor_next_words (current_key : st_word; last_keys : t_key(0 to G_KEY_WORDS - 1)) return t_key is
+    variable new_keys : t_key(0 to G_KEY_WORDS - 1);
+  begin
+    -- oldest word is last_keys(0), new words get appended
+    new_keys(0 to 3) := last_keys(G_KEY_WORDS - 4 to G_KEY_WORDS - 1);
+    for col in 0 to 3 loop
+      new_keys(0 + G_KEY_WORDS - 4)(col) := current_key(col) xor last_keys(0)(col);
+      new_keys(1 + G_KEY_WORDS - 4)(col) := new_keys(0 + G_KEY_WORDS - 4)(col) xor last_keys(1)(col);
+      new_keys(2 + G_KEY_WORDS - 4)(col) := new_keys(1 + G_KEY_WORDS - 4)(col) xor last_keys(2)(col);
+      new_keys(3 + G_KEY_WORDS - 4)(col) := new_keys(2 + G_KEY_WORDS - 4)(col) xor last_keys(3)(col);
+    end loop;
+    return new_keys;
+  end function;
+
 begin
 
   proc_key_expansion : process (isl_clk) is
@@ -61,19 +78,8 @@ begin
             v_sub_word(col) := C_SBOX(to_integer(a_data_out(G_KEY_WORDS - 1)(col)));
           end loop;
 
-          -- xor last word
-          -- oldest word is v_data_out(0), new words get appended
-          v_data_out(0 to 3) := a_data_out(G_KEY_WORDS - 4 to G_KEY_WORDS - 1);
-
-          for col in 0 to 3 loop
-            v_data_out(0 + G_KEY_WORDS - 4)(col) := v_sub_word(col) xor a_data_out(0)(col);
-            -- assign the following three words -> no sub, rot, ... needed
-            v_data_out(1 + G_KEY_WORDS - 4)(col) := v_data_out(0 + G_KEY_WORDS - 4)(col) xor a_data_out(1)(col);
-            v_data_out(2 + G_KEY_WORDS - 4)(col) := v_data_out(1 + G_KEY_WORDS - 4)(col) xor a_data_out(2)(col);
-            v_data_out(3 + G_KEY_WORDS - 4)(col) := v_data_out(2 + G_KEY_WORDS - 4)(col) xor a_data_out(3)(col);
-
-            a_data_out <= v_data_out;
-          end loop;
+          -- xor next words
+          a_data_out <= xor_next_words(v_sub_word, a_data_out);
         else
           -- execute the full key expansion routine
 
@@ -97,19 +103,8 @@ begin
           -- calculate round constant for the next round, as defined in: "FIPS 197, 5.2 Key Expansion"
           a_rcon(0) <= multiply_polynomial(a_rcon(0), x"02");
 
-          -- xor last word
-          -- oldest word is v_data_out(0), new words get appended
-          v_data_out(0 to 3) := a_data_out(G_KEY_WORDS - 4 to G_KEY_WORDS - 1);
-
-          for col in 0 to 3 loop
-            v_data_out(0 + G_KEY_WORDS - 4)(col) := v_rcon_word(col) xor a_data_out(0)(col);
-            -- assign the following three words -> no sub, rot, ... needed
-            v_data_out(1 + G_KEY_WORDS - 4)(col) := v_data_out(0 + G_KEY_WORDS - 4)(col) xor a_data_out(1)(col);
-            v_data_out(2 + G_KEY_WORDS - 4)(col) := v_data_out(1 + G_KEY_WORDS - 4)(col) xor a_data_out(2)(col);
-            v_data_out(3 + G_KEY_WORDS - 4)(col) := v_data_out(2 + G_KEY_WORDS - 4)(col) xor a_data_out(3)(col);
-
-            a_data_out <= v_data_out;
-          end loop;
+          -- xor next words
+          a_data_out <= xor_next_words(v_rcon_word, a_data_out);
         end if;
       end if;
     end if;
