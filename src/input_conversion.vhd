@@ -6,39 +6,40 @@ library ieee;
 library aes_lib;
   use aes_lib.aes_pkg.all;
 
-entity INPUT_CONVERSION is
+entity input_conversion is
   generic (
-    G_BITWIDTH_IF   : integer range 8 to 128   := 128;
-    G_BITWIDTH_KEY  : integer range 128 to 256 := 128;
-    G_BITWIDTH_IV   : integer range 0 to 128   := 128
+    G_BITWIDTH_IF  : integer range 8 to 128   := 128;
+    G_BITWIDTH_KEY : integer range 128 to 256 := 128;
+    G_BITWIDTH_IV  : integer range 0 to 128   := 128
   );
   port (
-    isl_clk         : in    std_logic;
-    isl_valid       : in    std_logic;
-    islv_data       : in    std_logic_vector(G_BITWIDTH_IF - 1 downto 0);
-    isl_new_key_iv  : in    std_logic;
-    oa_iv           : out   st_state;
-    oa_key          : out   t_key(0 to G_BITWIDTH_KEY / 32 - 1);
-    oa_data         : out   st_state;
-    osl_valid       : out   std_logic
+    isl_clk        : in    std_logic;
+    isl_valid      : in    std_logic;
+    islv_data      : in    std_logic_vector(G_BITWIDTH_IF - 1 downto 0);
+    isl_new_key_iv : in    std_logic;
+    oa_iv          : out   st_state;
+    oa_key         : out   t_key(0 to G_BITWIDTH_KEY / 32 - 1);
+    oa_data        : out   st_state;
+    osl_valid      : out   std_logic
   );
-end entity INPUT_CONVERSION;
+end entity input_conversion;
 
-architecture RTL of INPUT_CONVERSION is
+architecture rtl of input_conversion is
 
   constant C_KEY_DATUMS    : integer := G_BITWIDTH_KEY / G_BITWIDTH_IF;
   constant C_KEY_IV_DATUMS : integer := C_KEY_DATUMS + G_BITWIDTH_IV / G_BITWIDTH_IF;
   constant C_TOTAL_DATUMS  : integer := C_KEY_IV_DATUMS + 128 / G_BITWIDTH_IF;
-  signal int_input_cnt            : integer range 0 to C_TOTAL_DATUMS := 0;
+  signal   int_input_cnt   : integer range 0 to C_TOTAL_DATUMS := 0;
 
-  signal sl_output_valid          : std_logic := '0';
+  signal sl_output_valid : std_logic := '0';
 
-  signal slv_data,         slv_iv : std_logic_vector(127 downto 0) := (others => '0');
-  signal slv_key                  : std_logic_vector(G_BITWIDTH_KEY - 1 downto 0) := (others => '0');
+  signal slv_data : std_logic_vector(127 downto 0) := (others => '0');
+  signal slv_iv   : std_logic_vector(127 downto 0) := (others => '0');
+  signal slv_key  : std_logic_vector(G_BITWIDTH_KEY - 1 downto 0) := (others => '0');
 
 begin
 
-  PROC_INPUT_CONVERSION : process (isl_clk) is
+  proc_input_conversion : process (isl_clk) is
   begin
 
     if (isl_clk'event and isl_clk = '1') then
@@ -65,11 +66,11 @@ begin
       end if;
     end if;
 
-  end process PROC_INPUT_CONVERSION;
+  end process proc_input_conversion;
 
   oa_data   <= transpose(slv_to_state_array(slv_data));
   oa_key    <= slv_to_key_array(slv_key); -- don't transpose key, since it's needed like this by the key expansion
   oa_iv     <= transpose(slv_to_state_array(slv_iv));
   osl_valid <= sl_output_valid;
 
-end architecture RTL;
+end architecture rtl;

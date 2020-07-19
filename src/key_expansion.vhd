@@ -7,30 +7,30 @@ library ieee;
 library aes_lib;
   use aes_lib.aes_pkg.all;
 
-entity KEY_EXPANSION is
+entity key_expansion is
   generic (
     G_KEY_WORDS : integer := 4
   );
   port (
-    isl_clk       : in    std_logic;
-    isl_next_key  : in    std_logic;
-    isl_valid     : in    std_logic;
-    ia_data       : in    t_key(0 to G_KEY_WORDS - 1);
-    oa_data       : out   st_state
+    isl_clk      : in    std_logic;
+    isl_next_key : in    std_logic;
+    isl_valid    : in    std_logic;
+    ia_data      : in    t_key(0 to G_KEY_WORDS - 1);
+    oa_data      : out   st_state
   );
-end entity KEY_EXPANSION;
+end entity key_expansion;
 
-architecture RTL of KEY_EXPANSION is
+architecture rtl of key_expansion is
 
-  signal sl_process     : std_logic := '0';
-  signal a_rcon         : st_word := (others => (others => '0'));
-  signal a_data_out     : t_key(0 to G_KEY_WORDS - 1) := (others => (others => (others => '0')));
+  signal sl_process : std_logic := '0';
+  signal a_rcon     : st_word := (others => (others => '0'));
+  signal a_data_out : t_key(0 to G_KEY_WORDS - 1) := (others => (others => (others => '0')));
 
   signal sl_short_round : std_logic := '0';
 
 begin
 
-  PROC_KEY_EXPANSION : process (isl_clk) is
+  proc_key_expansion : process (isl_clk) is
 
     variable v_data_out  : t_key(0 to G_KEY_WORDS - 1);
     variable v_rost_word : st_word;
@@ -64,6 +64,7 @@ begin
           -- xor last word
           -- oldest word is v_data_out(0), new words get appended
           v_data_out(0 to 3) := a_data_out(G_KEY_WORDS - 4 to G_KEY_WORDS - 1);
+
           for col in 0 to 3 loop
             v_data_out(0 + G_KEY_WORDS - 4)(col) := v_sub_word(col) xor a_data_out(0)(col);
             -- assign the following three words -> no sub, rot, ... needed
@@ -99,6 +100,7 @@ begin
           -- xor last word
           -- oldest word is v_data_out(0), new words get appended
           v_data_out(0 to 3) := a_data_out(G_KEY_WORDS - 4 to G_KEY_WORDS - 1);
+
           for col in 0 to 3 loop
             v_data_out(0 + G_KEY_WORDS - 4)(col) := v_rcon_word(col) xor a_data_out(0)(col);
             -- assign the following three words -> no sub, rot, ... needed
@@ -112,8 +114,8 @@ begin
       end if;
     end if;
 
-  end process PROC_KEY_EXPANSION;
+  end process proc_key_expansion;
 
   oa_data <= type_key_to_state(a_data_out(0 to 3));
 
-end architecture RTL;
+end architecture rtl;

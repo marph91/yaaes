@@ -7,7 +7,7 @@ library ieee;
 library aes_lib;
   use aes_lib.aes_pkg.all;
 
-entity CIPHER is
+entity cipher is
   generic (
     G_KEY_WORDS : integer := 4
   );
@@ -19,9 +19,9 @@ entity CIPHER is
     oa_data   : out   st_state;
     osl_valid : out   std_logic
   );
-end entity CIPHER;
+end entity cipher;
 
-architecture RTL of CIPHER is
+architecture rtl of cipher is
 
   -- states
   signal slv_stage     : std_logic_vector(1 to 2) := (others => '0');
@@ -33,9 +33,9 @@ architecture RTL of CIPHER is
   -- data format in key expansion: words are rows
   -- data format in cipher: words are columns
   -- conversion: transpose matrix
-  signal a_data_in     : st_state;
-  signal a_data_added  : st_state;
-  signal a_data_srows  : st_state;
+  signal a_data_in    : st_state;
+  signal a_data_added : st_state;
+  signal a_data_srows : st_state;
 
   -- keys
   signal a_round_keys  : st_state;
@@ -45,7 +45,7 @@ begin
 
   sl_next_round <= slv_stage(2) and not sl_last_round;
 
-  i_key_expansion : entity aes_lib.KEY_EXPANSION
+  i_key_expansion : entity aes_lib.key_expansion
     generic map (
       G_KEY_WORDS   => G_KEY_WORDS
     )
@@ -57,7 +57,7 @@ begin
       oa_data       => a_round_keys
     );
 
-  PROC_KEY_EXPANSION : process (isl_clk) is
+  proc_key_expansion : process (isl_clk) is
 
     variable v_new_col    : integer range 0 to C_STATE_COLS - 1;
     variable v_data_sbox  : st_state;
@@ -115,9 +115,9 @@ begin
       sl_valid_out <= sl_last_round;
     end if;
 
-  end process PROC_KEY_EXPANSION;
+  end process proc_key_expansion;
 
   oa_data   <= a_data_added;
   osl_valid <= sl_valid_out;
 
-end architecture RTL;
+end architecture rtl;

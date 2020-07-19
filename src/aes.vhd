@@ -7,16 +7,16 @@ library ieee;
 library aes_lib;
   use aes_lib.aes_pkg.all;
 
-entity AES is
+entity aes is
   generic (
     -- bitwidth of the input/output interface (8, 32 or 128 bit)
-    G_BITWIDTH_IF  : integer range 8 to 128   := 32;
+    G_BITWIDTH_IF : integer range 8 to 128 := 32;
 
     -- one of the AES operation modes (ECB, CBC, CFB or OFB)
-    G_MODE         : t_mode                   := ECB;
+    G_MODE : t_mode := ECB;
 
     -- encryption or decryption mode
-    G_ENCRYPTION   : integer range 0 to 1     := 1;
+    G_ENCRYPTION : integer range 0 to 1 := 1;
 
     -- bitwidth of the key, i. e. AES-128 or AES-256
     G_BITWIDTH_KEY : integer range 128 to 256 := 256
@@ -29,12 +29,11 @@ entity AES is
     oslv_ciphertext : out   std_logic_vector(G_BITWIDTH_IF - 1 downto 0);
     osl_valid       : out   std_logic
   );
-end entity AES;
+end entity aes;
 
-architecture RTL of AES is
+architecture rtl of aes is
 
   constant C_KEY_WORDS   : integer := G_BITWIDTH_KEY / 32;
-
   constant C_BITWIDTH_IV : integer range 0 to 128 := calculate_bw_iv(G_MODE);
 
   signal sl_valid_conv       : std_logic := '0';
@@ -46,14 +45,14 @@ architecture RTL of AES is
   signal a_data_cipher_out   : st_state;
   signal a_data_out          : st_state;
 
-  signal a_key_cipher_in     : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
-  signal a_key_conv          : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
+  signal a_key_cipher_in : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
+  signal a_key_conv      : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
 
-  signal sl_new_key_iv       : std_logic := '0';
+  signal sl_new_key_iv : std_logic := '0';
 
 begin
 
-  i_input_conversion : entity aes_lib.INPUT_CONVERSION
+  i_input_conversion : entity aes_lib.input_conversion
     generic map (
       G_BITWIDTH_IF  => G_BITWIDTH_IF,
       G_BITWIDTH_KEY => G_BITWIDTH_KEY,
@@ -70,7 +69,7 @@ begin
       osl_valid      => sl_valid_conv
     );
 
-  i_cipher : entity aes_lib.CIPHER
+  i_cipher : entity aes_lib.cipher
     generic map (
       G_KEY_WORDS => C_KEY_WORDS
     )
@@ -83,7 +82,7 @@ begin
       osl_valid => sl_valid_cipher_out
     );
 
-  i_output_conversion : entity aes_lib.OUTPUT_CONVERSION
+  i_output_conversion : entity aes_lib.output_conversion
     generic map (
       G_BITWIDTH => G_BITWIDTH_IF
     )
@@ -99,7 +98,7 @@ begin
     G_BITWIDTH_IF = 32 or
     G_BITWIDTH_IF = 128 report "unsupported bitwidth " & integer'IMAGE(G_BITWIDTH_IF) severity failure;
 
-  PROC_CHAIN : process (isl_clk) is
+  proc_chain : process (isl_clk) is
   begin
 
     if (isl_clk'event and isl_clk = '1') then
@@ -111,29 +110,29 @@ begin
       end if;
     end if;
 
-  end process PROC_CHAIN;
+  end process proc_chain;
 
-  GEN_ENCRYPTION : if G_ENCRYPTION = 1 generate
+  gen_encryption : if G_ENCRYPTION = 1 generate
 
-    GEN_ECB : if G_MODE = ECB generate
+    gen_ecb : if G_MODE = ECB generate
       a_data_cipher_in <= a_data_conv;
       a_key_cipher_in  <= a_key_conv;
       a_data_out       <= a_data_cipher_out;
       oslv_ciphertext  <= slv_data_out;
-    end generate GEN_ECB;
+    end generate gen_ecb;
 
-    GEN_CBC : if G_MODE = CBC generate
+    gen_cbc : if G_MODE = CBC generate
       a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_new_key_iv = '0'
                           else
                           xor_array(a_iv_conv, a_data_conv);
       a_key_cipher_in  <= a_key_conv;
       a_data_out       <= a_data_cipher_out;
       oslv_ciphertext  <= slv_data_out;
-    end generate GEN_CBC;
+    end generate gen_cbc;
 
-    GEN_CFB : if G_MODE = CFB generate
+    gen_cfb : if G_MODE = CFB generate
 
-      PROC_CIPHER_IN : process (isl_clk) is
+      proc_cipher_in : process (isl_clk) is
       begin
 
         -- save the cipher input, because it gets modified as soon as there
@@ -144,34 +143,34 @@ begin
           a_data_cipher_in <= a_iv_conv;
         end if;
 
-      end process PROC_CIPHER_IN;
+      end process proc_cipher_in;
 
       a_key_cipher_in <= a_key_conv;
       a_data_out      <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;
-    end generate GEN_CFB;
+    end generate gen_cfb;
 
-    GEN_OFB : if G_MODE = OFB generate
+    gen_ofb : if G_MODE = OFB generate
       a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else
                           a_iv_conv;
       a_key_cipher_in  <= a_key_conv;
       a_data_out       <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext  <= slv_data_out;
-    end generate GEN_OFB;
+    end generate gen_ofb;
 
-    GEN_CTR : if G_MODE = CTR generate
+    gen_ctr : if G_MODE = CTR generate
       -- TODO: add counter mode, as described in: "NIST SP 800-38A"
-    end generate GEN_CTR;
+    end generate gen_ctr;
 
-  end generate GEN_ENCRYPTION;
+  end generate gen_encryption;
 
-  GEN_DECRYPTION : if G_ENCRYPTION = 0 generate
+  gen_decryption : if G_ENCRYPTION = 0 generate
     -- TODO: add decryption, respectively inverse cipher, as described in: "NIST FIPS 197, 5.3 Inverse Cipher"
 
-    GEN_CFB : if G_MODE = CFB generate
+    gen_cfb : if G_MODE = CFB generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
-      PROC_CIPHER_IN : process (isl_clk) is
+      proc_cipher_in : process (isl_clk) is
       begin
 
         -- save the cipher input, because it gets modified as soon as there
@@ -182,14 +181,14 @@ begin
           a_data_cipher_in <= a_iv_conv;
         end if;
 
-      end process PROC_CIPHER_IN;
+      end process proc_cipher_in;
 
       a_key_cipher_in <= a_key_conv;
       a_data_out      <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext <= slv_data_out;
-    end generate GEN_CFB;
+    end generate gen_cfb;
 
-    GEN_OFB : if G_MODE = OFB generate
+    gen_ofb : if G_MODE = OFB generate
       -- ciphertext -> plaintext
       -- plaintext -> ciphertext
       a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else
@@ -197,8 +196,8 @@ begin
       a_key_cipher_in  <= a_key_conv;
       a_data_out       <= xor_array(a_data_cipher_out, a_data_conv);
       oslv_ciphertext  <= slv_data_out;
-    end generate GEN_OFB;
+    end generate gen_ofb;
 
-  end generate GEN_DECRYPTION;
+  end generate gen_decryption;
 
-end architecture RTL;
+end architecture rtl;

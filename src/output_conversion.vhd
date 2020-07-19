@@ -9,32 +9,32 @@ library ieee;
 library aes_lib;
   use aes_lib.aes_pkg.all;
 
-entity OUTPUT_CONVERSION is
+entity output_conversion is
   generic (
     G_BITWIDTH : integer range 8 to 128 := 128
   );
   port (
-    isl_clk         : in    std_logic;
-    isl_valid       : in    std_logic;
-    ia_data         : in    st_state;
-    oslv_data       : out   std_logic_vector(G_BITWIDTH - 1 downto 0);
-    osl_valid       : out   std_logic
+    isl_clk   : in    std_logic;
+    isl_valid : in    std_logic;
+    ia_data   : in    st_state;
+    oslv_data : out   std_logic_vector(G_BITWIDTH - 1 downto 0);
+    osl_valid : out   std_logic
   );
-end entity OUTPUT_CONVERSION;
+end entity output_conversion;
 
-architecture RTL of OUTPUT_CONVERSION is
+architecture rtl of output_conversion is
 
   constant C_TOTAL_DATUMS : integer := 128 / G_BITWIDTH;
-  signal int_output_cnt     : integer range 0 to C_TOTAL_DATUMS := 0;
+  signal   int_output_cnt : integer range 0 to C_TOTAL_DATUMS := 0;
 
   signal sl_output_valid    : std_logic := '0';
   signal sl_output_valid_d1 : std_logic := '0';
 
-  signal slv_data           : std_logic_vector(127 downto 0);
+  signal slv_data : std_logic_vector(127 downto 0);
 
 begin
 
-  PROC_OUTPUT_CONVERSION : process (isl_clk) is
+  proc_output_conversion : process (isl_clk) is
   begin
 
     if (isl_clk'event and isl_clk = '1') then
@@ -59,8 +59,8 @@ begin
       end if;
     end if;
 
-  end process PROC_OUTPUT_CONVERSION;
+  end process proc_output_conversion;
 
   osl_valid <= sl_output_valid_d1;
 
-end architecture RTL;
+end architecture rtl;

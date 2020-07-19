@@ -3,7 +3,7 @@ library ieee;
   use ieee.std_logic_1164.all;
   use ieee.numeric_std.all;
 
-package AES_PKG is
+package aes_pkg is
 
   type t_mode is (ECB, CBC, CFB, OFB, CTR);
 
@@ -63,7 +63,7 @@ package AES_PKG is
 
   function inv_mix_columns (a_in : st_state) return st_state;
 
-end package AES_PKG;
+end package aes_pkg;
 
 package body aes_pkg is
 
@@ -151,9 +151,9 @@ package body aes_pkg is
   -- convert a std_logic_vector to an array
 
   function slv_to_state_array (vec : std_logic_vector(127 downto 0)) return st_state is
-    variable arr : st_state;
+    variable arr      : st_state;
     variable vec_high : integer;
-    variable vec_low : integer;
+    variable vec_low  : integer;
   begin
     for row in arr'RANGE(1) loop
       for col in arr'RANGE(2) loop
@@ -166,9 +166,9 @@ package body aes_pkg is
   end function;
 
   function slv_to_key_array (vec : std_logic_vector) return t_key is
-    variable arr : t_key(0 to vec'LENGTH / 32 - 1);
+    variable arr      : t_key(0 to vec'LENGTH / 32 - 1);
     variable vec_high : integer;
-    variable vec_low : integer;
+    variable vec_low  : integer;
   begin
     for row in arr'RANGE loop
       for col in 0 to 3 loop
@@ -183,9 +183,9 @@ package body aes_pkg is
   -- convert an array to a std_logic_vector
 
   function array_to_slv (arr : st_state) return std_logic_vector is
-    variable vec : std_logic_vector(127 downto 0);
+    variable vec      : std_logic_vector(127 downto 0);
     variable vec_high : integer;
-    variable vec_low : integer;
+    variable vec_low  : integer;
   begin
     for row in arr'RANGE(1) loop
       for col in arr'RANGE(2) loop
