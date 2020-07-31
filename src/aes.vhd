@@ -101,7 +101,7 @@ begin
   proc_chain : process (isl_clk) is
   begin
 
-    if (isl_clk'event and isl_clk = '1') then
+    if (rising_edge(isl_clk)) then
       if (isl_new_key_iv = '1') then
         sl_new_key_iv <= '1';
       end if;

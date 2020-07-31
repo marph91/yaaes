@@ -57,7 +57,7 @@ begin
 
   begin
 
-    if (isl_clk'event and isl_clk = '1') then
+    if (rising_edge(isl_clk)) then
       sl_process <= isl_valid or isl_next_key;
 
       -- first key is the input

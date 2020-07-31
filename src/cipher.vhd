@@ -65,7 +65,7 @@ begin
 
   begin
 
-    if (isl_clk'event and isl_clk = '1') then
+    if (rising_edge(isl_clk)) then
       slv_stage <= (isl_valid or sl_next_round) & slv_stage(1);
 
       -- initial add key

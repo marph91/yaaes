@@ -37,7 +37,7 @@ begin
   proc_output_conversion : process (isl_clk) is
   begin
 
-    if (isl_clk'event and isl_clk = '1') then
+    if (rising_edge(isl_clk)) then
       sl_output_valid_d1 <= sl_output_valid;
 
       if (isl_valid = '1') then
