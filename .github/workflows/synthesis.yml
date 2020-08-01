@@ -1,9 +1,6 @@
 name: synthesis
 
-on:
-  push:
-  schedule:
-    - cron: '0 0 * * *'
+on: [push, pull_request]
 
 jobs:
   synthesis:
@@ -12,17 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run synthesis
-        continue-on-error: true
-        run: |
-          ghdl -a --std=08 --work=aes_lib src/aes_pkg.vhd
-          ghdl -a --std=08 --work=aes_lib src/input_conversion.vhd
-          ghdl -a --std=08 --work=aes_lib src/output_conversion.vhd
-          ghdl -a --std=08 --work=aes_lib src/key_expansion.vhd
-          ghdl -a --std=08 --work=aes_lib src/cipher.vhd
-          ghdl -a --std=08 --work=aes_lib src/aes.vhd
-          yosys -m ghdl -p "ghdl --std=08 --work=aes_lib aes; synth_ice40 -json aes.json"
+        run: syn/synth.sh .
       - name: Upload result
         uses: actions/upload-artifact@v2
         with:
           name: output
-          path: aes.json
+          path: build/aes.json

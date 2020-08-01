@@ -84,8 +84,8 @@ begin
 
             -- shift rows
             -- avoid modulo by using unsigned overflow
-            v_new_col := to_integer(to_unsigned(col, 2) - row);
-            a_data_srows(row, v_new_col) <= v_data_sbox(row, col);
+            -- v_new_col := to_integer(to_unsigned(col, 2) - row);
+            a_data_srows(row, to_integer(to_unsigned(col, 2) - row)) <= v_data_sbox(row, col);
           end loop;
         end loop;
 
