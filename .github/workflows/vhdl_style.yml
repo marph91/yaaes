@@ -1,9 +1,6 @@
 name: vhdl_style
 
-on:
-  push:
-  schedule:
-    - cron: '0 0 * * *'
+on: [push, pull_request]
 
 jobs:
   build:
