@@ -96,7 +96,9 @@ begin
 
   assert G_BITWIDTH_IF = 8 or
     G_BITWIDTH_IF = 32 or
-    G_BITWIDTH_IF = 128 report "unsupported bitwidth " & integer'IMAGE(G_BITWIDTH_IF) severity failure;
+    G_BITWIDTH_IF = 128
+    report "unsupported bitwidth " & integer'IMAGE(G_BITWIDTH_IF)
+    severity failure;
 
   proc_chain : process (isl_clk) is
   begin
@@ -122,8 +124,7 @@ begin
     end generate gen_ecb;
 
     gen_cbc : if G_MODE = CBC generate
-      a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_new_key_iv = '0'
-                          else
+      a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_new_key_iv = '0' else
                           xor_array(a_iv_conv, a_data_conv);
       a_key_cipher_in  <= a_key_conv;
       a_data_out       <= a_data_cipher_out;

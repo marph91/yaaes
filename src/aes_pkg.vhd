@@ -21,6 +21,7 @@ package aes_pkg is
   type t_key is array(natural range <>) of st_word;
 
   -- substitution box, as defined in: "FIPS 197, Figure 7. S-box"
+  -- vsg_off constant_012 constant_016
   constant C_SBOX : st_sbox := (
     x"63", x"7c", x"77", x"7b", x"f2", x"6b", x"6f", x"c5", x"30", x"01", x"67", x"2b", x"fe", x"d7", x"ab", x"76",
     x"ca", x"82", x"c9", x"7d", x"fa", x"59", x"47", x"f0", x"ad", x"d4", x"a2", x"af", x"9c", x"a4", x"72", x"c0",
@@ -37,7 +38,8 @@ package aes_pkg is
     x"ba", x"78", x"25", x"2e", x"1c", x"a6", x"b4", x"c6", x"e8", x"dd", x"74", x"1f", x"4b", x"bd", x"8b", x"8a",
     x"70", x"3e", x"b5", x"66", x"48", x"03", x"f6", x"0e", x"61", x"35", x"57", x"b9", x"86", x"c1", x"1d", x"9e",
     x"e1", x"f8", x"98", x"11", x"69", x"d9", x"8e", x"94", x"9b", x"1e", x"87", x"e9", x"ce", x"55", x"28", x"df",
-  x"8c", x"a1", x"89", x"0d", x"bf", x"e6", x"42", x"68", x"41", x"99", x"2d", x"0f", x"b0", x"54", x"bb", x"16");
+    x"8c", x"a1", x"89", x"0d", x"bf", x"e6", x"42", x"68", x"41", x"99", x"2d", x"0f", x"b0", x"54", x"bb", x"16");
+  -- vsg_on
 
   function xor_array (a, b : st_state) return st_state;
 
@@ -245,7 +247,8 @@ package body aes_pkg is
       when x"13" =>
         product := lhs xor xtime(lhs) xor xtime(xtime(xtime(xtime(lhs))));
       when others =>
-        assert false report "polynomial not supported";
+        assert false
+          report "polynomial not supported";
 
     end case;
 
@@ -304,4 +307,4 @@ package body aes_pkg is
     return a_out;
   end inv_mix_columns;
 
-end package body;
+end package body aes_pkg;

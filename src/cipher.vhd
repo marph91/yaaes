@@ -47,14 +47,14 @@ begin
 
   i_key_expansion : entity aes_lib.key_expansion
     generic map (
-      G_KEY_WORDS   => G_KEY_WORDS
+      G_KEY_WORDS => G_KEY_WORDS
     )
     port map (
-      isl_clk       => isl_clk,
-      isl_next_key  => sl_next_round,
-      isl_valid     => isl_valid,
-      ia_data       => ia_key,
-      oa_data       => a_round_keys
+      isl_clk      => isl_clk,
+      isl_next_key => sl_next_round,
+      isl_valid    => isl_valid,
+      ia_data      => ia_key,
+      oa_data      => a_round_keys
     );
 
   proc_key_expansion : process (isl_clk) is
