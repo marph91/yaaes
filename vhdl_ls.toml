@@ -1,0 +1,4 @@
+[libraries]
+aes_lib.files = [
+  "src/*.vhd",
+]
