@@ -13,7 +13,7 @@ entity aes is
     G_BITWIDTH_IF : integer range 8 to 128 := 32;
 
     -- one of the AES operation modes (ECB, CBC, CFB or OFB)
-    G_MODE : t_mode := ECB;
+    G_MODE : t_mode := CFB;
 
     -- encryption or decryption mode
     G_ENCRYPTION : integer range 0 to 1 := 1;
@@ -87,7 +87,7 @@ begin
     )
     port map (
       isl_clk   => isl_clk,
-      isl_valid => sl_valid_conv,
+      isl_valid => sl_valid_cipher_in,
       ia_data   => a_data_cipher_in,
       ia_key    => a_key_cipher_in,
       oa_data   => a_data_cipher_out,
@@ -131,18 +131,20 @@ begin
     -- input: plaintext, output: cyphertext
 
     gen_ecb : if G_MODE = ECB generate
-      a_data_cipher_in <= a_data_conv;
-      a_key_cipher_in  <= a_key_conv;
-      a_data_out       <= a_data_cipher_out;
-      oslv_data        <= slv_data_out;
+      sl_valid_cipher_in <= sl_valid_conv;
+      a_data_cipher_in   <= a_data_conv;
+      a_key_cipher_in    <= a_key_conv;
+      a_data_out         <= a_data_cipher_out;
+      oslv_data          <= slv_data_out;
     end generate gen_ecb;
 
     gen_cbc : if G_MODE = CBC generate
-      a_data_cipher_in <= xor_array(a_data_cipher_out, a_data_conv) when sl_new_key_iv = '0' else
-                          xor_array(a_iv_conv, a_data_conv);
-      a_key_cipher_in  <= a_key_conv;
-      a_data_out       <= a_data_cipher_out;
-      oslv_data        <= slv_data_out;
+      sl_valid_cipher_in <= sl_valid_conv;
+      a_data_cipher_in   <= xor_array(a_data_cipher_out, a_data_conv) when sl_new_key_iv = '0' else
+                            xor_array(a_iv_conv, a_data_conv);
+      a_key_cipher_in    <= a_key_conv;
+      a_data_out         <= a_data_cipher_out;
+      oslv_data          <= slv_data_out;
     end generate gen_cbc;
 
     gen_cfb : if G_MODE = CFB generate
@@ -150,27 +152,32 @@ begin
       proc_cipher_in : process (isl_clk) is
       begin
 
-        -- Register the cipher input, because it gets modified as soon as there
-        -- is new input (a_data_conv).
-        if (sl_valid_cipher_out = '1' and sl_new_key_iv = '0') then
-          a_data_cipher_in <= a_data_out;
-        elsif (sl_new_key_iv = '1') then
-          a_data_cipher_in <= a_iv_conv;
+        if (rising_edge(isl_clk)) then
+          -- Register the cipher input, because it gets modified as soon as there
+          -- is new input (a_data_conv).
+          sl_valid_cipher_in <= sl_valid_conv;
+          a_key_cipher_in    <= a_key_conv;
+
+          if (sl_valid_cipher_out = '1' and sl_new_key_iv = '0') then
+            a_data_cipher_in <= a_data_out;
+          elsif (sl_new_key_iv = '1') then
+            a_data_cipher_in <= a_iv_conv;
+          end if;
         end if;
 
       end process proc_cipher_in;
 
-      a_key_cipher_in <= a_key_conv;
-      a_data_out      <= xor_array(a_data_cipher_out, a_data_conv);
-      oslv_data       <= slv_data_out;
+      a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_data  <= slv_data_out;
     end generate gen_cfb;
 
     gen_ofb : if G_MODE = OFB generate
-      a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else
-                          a_iv_conv;
-      a_key_cipher_in  <= a_key_conv;
-      a_data_out       <= xor_array(a_data_cipher_out, a_data_conv);
-      oslv_data        <= slv_data_out;
+      sl_valid_cipher_in <= sl_valid_conv;
+      a_data_cipher_in   <= a_data_cipher_out when sl_new_key_iv = '0' else
+                            a_iv_conv;
+      a_key_cipher_in    <= a_key_conv;
+      a_data_out         <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_data          <= slv_data_out;
     end generate gen_ofb;
 
     gen_ctr : if G_MODE = CTR generate
@@ -190,27 +197,32 @@ begin
       proc_cipher_in : process (isl_clk) is
       begin
 
-        -- save the cipher input, because it gets modified as soon as there
-        -- is new input (a_data_conv)
-        if (sl_valid_cipher_out = '1' and sl_new_key_iv = '0') then
-          a_data_cipher_in <= a_data_conv;
-        elsif (sl_new_key_iv = '1') then
-          a_data_cipher_in <= a_iv_conv;
+        if (rising_edge(isl_clk)) then
+          -- Register the cipher input, because it gets modified as soon as there
+          -- is new input (a_data_conv).
+          sl_valid_cipher_in <= sl_valid_conv;
+          a_key_cipher_in    <= a_key_conv;
+
+          if (sl_valid_cipher_out = '1' and sl_new_key_iv = '0') then
+            a_data_cipher_in <= a_data_conv;
+          elsif (sl_new_key_iv = '1') then
+            a_data_cipher_in <= a_iv_conv;
+          end if;
         end if;
 
       end process proc_cipher_in;
 
-      a_key_cipher_in <= a_key_conv;
-      a_data_out      <= xor_array(a_data_cipher_out, a_data_conv);
-      oslv_data       <= slv_data_out;
+      a_data_out <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_data  <= slv_data_out;
     end generate gen_cfb;
 
     gen_ofb : if G_MODE = OFB generate
-      a_data_cipher_in <= a_data_cipher_out when sl_new_key_iv = '0' else
-                          a_iv_conv;
-      a_key_cipher_in  <= a_key_conv;
-      a_data_out       <= xor_array(a_data_cipher_out, a_data_conv);
-      oslv_data        <= slv_data_out;
+      sl_valid_cipher_in <= sl_valid_conv;
+      a_data_cipher_in   <= a_data_cipher_out when sl_new_key_iv = '0' else
+                            a_iv_conv;
+      a_key_cipher_in    <= a_key_conv;
+      a_data_out         <= xor_array(a_data_cipher_out, a_data_conv);
+      oslv_data          <= slv_data_out;
     end generate gen_ofb;
 
   end generate gen_decryption;
