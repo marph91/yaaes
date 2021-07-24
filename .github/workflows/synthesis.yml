@@ -9,7 +9,7 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Run synthesis
-        run: syn/synth.sh .
+        run: syn/synth.sh
       - name: Upload result
         uses: actions/upload-artifact@v2
         with:
