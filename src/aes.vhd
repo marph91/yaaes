@@ -44,19 +44,23 @@ architecture rtl of aes is
   constant C_KEY_WORDS   : integer := G_BITWIDTH_KEY / 32;
   constant C_BITWIDTH_IV : integer range 0 to 128 := calculate_bw_iv(G_MODE);
 
-  signal sl_valid_conv       : std_logic := '0';
-  signal sl_valid_cipher_out : std_logic := '0';
-  signal slv_data_out        : std_logic_vector(G_BITWIDTH_IF - 1 downto 0) := (others => '0');
-  signal a_data_conv         : st_state;
-  signal a_iv_conv           : st_state;
-  signal a_data_cipher_in    : st_state;
-  signal a_data_cipher_out   : st_state;
-  signal a_data_out          : st_state;
-
-  signal a_key_cipher_in : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
-  signal a_key_conv      : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
-
+  -- input conversion
   signal sl_new_key_iv : std_logic := '0';
+  signal sl_valid_conv : std_logic := '0';
+  signal a_data_conv   : st_state;
+  signal a_iv_conv     : st_state;
+  signal a_key_conv    : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
+
+  -- cipher
+  signal sl_valid_cipher_in  : std_logic := '0';
+  signal a_data_cipher_in    : st_state;
+  signal a_key_cipher_in     : t_key(0 to C_KEY_WORDS - 1) := (others => (others => (others => '0')));
+  signal slv_data_out        : std_logic_vector(G_BITWIDTH_IF - 1 downto 0) := (others => '0');
+  signal sl_valid_cipher_out : std_logic := '0';
+
+  -- output conversion
+  signal a_data_cipher_out : st_state;
+  signal a_data_out        : st_state;
 
 begin
 
