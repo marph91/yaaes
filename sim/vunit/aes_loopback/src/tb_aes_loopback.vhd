@@ -15,7 +15,7 @@ library test_lib;
 library vunit_lib;
   context vunit_lib.vunit_context;
 
-entity tb_aes_selftest is
+entity tb_aes_loopback is
   generic (
     runner_cfg    : string;
 
@@ -28,9 +28,9 @@ entity tb_aes_selftest is
     G_IV          : string;
     G_BITWIDTH_KEY: integer
   );
-end entity tb_aes_selftest;
+end entity tb_aes_loopback;
 
-architecture rtl of tb_aes_selftest is
+architecture rtl of tb_aes_loopback is
   constant C_CLK_PERIOD : time := 10 ns;
   signal sl_clk : std_logic := '0';
 
@@ -63,9 +63,9 @@ begin
   port map (
     isl_clk=> sl_clk,
     isl_valid => r_encrypt.sl_valid_in,
-    islv_plaintext => r_encrypt.slv_data_in,
+    islv_data => r_encrypt.slv_data_in,
     isl_new_key_iv => r_encrypt.sl_new_key_iv,
-    oslv_ciphertext => r_encrypt.slv_data_out,
+    oslv_data => r_encrypt.slv_data_out,
     osl_valid => r_encrypt.sl_valid_out
   );
 
@@ -80,9 +80,9 @@ begin
 	port map (
     isl_clk   => sl_clk,
     isl_valid => r_decrypt.sl_valid_in,
-    islv_plaintext => r_decrypt.slv_data_in,
+    islv_data => r_decrypt.slv_data_in,
     isl_new_key_iv => r_decrypt.sl_new_key_iv,
-    oslv_ciphertext => r_decrypt.slv_data_out,
+    oslv_data => r_decrypt.slv_data_out,
     osl_valid => r_decrypt.sl_valid_out
   );
   

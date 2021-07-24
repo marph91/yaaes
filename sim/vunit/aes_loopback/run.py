@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""Do selftests for the AES VHDL design."""
+"""Do a loopback test for the AES VHDL design. I. e. encrypt and decrypt afterwards."""
 
 
 import itertools
@@ -9,8 +9,8 @@ import common
 
 
 def create_test_suite(lib):
-    """Create a testsuite for the aes selftests."""
-    tb_aes = lib.entity("tb_aes_selftest")
+    """Create a testsuite for the aes loopback test."""
+    tb_aes = lib.entity("tb_aes_loopback")
 
     # simulate two rounds of en- and decrypting for each chaining mode
     test_params = itertools.product(
