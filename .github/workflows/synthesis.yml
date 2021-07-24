@@ -5,7 +5,7 @@ on: [push, pull_request]
 jobs:
   synthesis:
     runs-on: ubuntu-latest
-    container: ghdl/synth:beta
+    container: hdlc/impl:ecp5
     steps:
       - uses: actions/checkout@v2
       - name: Run synthesis

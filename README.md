@@ -3,6 +3,7 @@
 [![testsuite](https://github.com/marph91/yaaes/workflows/testsuite/badge.svg)](https://github.com/marph91/yaaes/actions?query=workflow%3Atestsuite)
 [![codecov](https://codecov.io/gh/marph91/yaaes/branch/master/graph/badge.svg)](https://codecov.io/gh/marph91/yaaes)
 [![vhdl_style](https://github.com/marph91/yaaes/workflows/vhdl_style/badge.svg)](https://github.com/marph91/yaaes/actions?query=workflow%3Avhdl_style)
+[![synthesis](https://github.com/marph91/yaaes/actions/workflows/synthesis.yml/badge.svg)](https://github.com/marph91/yaaes/actions/workflows/synthesis.yml)
 
 VHDL implementation of the symmetric block cipher AES, as specified in the [NIST FIPS 197](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.197.pdf), respectively [NIST SP 800-38A](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf).
 
