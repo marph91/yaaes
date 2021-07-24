@@ -78,6 +78,9 @@ begin
     sl_stimuli_done <= '0';
 
     slv_data_ref <= array_to_slv(a_data_ref);
+    sl_new_key_iv <= '1';
+    wait until rising_edge(sl_clk);
+    sl_new_key_iv <= '0';
     wait until rising_edge(sl_clk);
     sl_valid_in <= '1';
 
