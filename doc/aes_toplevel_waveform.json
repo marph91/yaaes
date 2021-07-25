@@ -1,0 +1,40 @@
+{
+  "signal": [
+    {
+      "name": "isl_clk",
+      "wave": "p..................|.........|....."
+    },
+    {},
+    {
+      "name": "isl_new_key_iv",
+      "wave": "010................|.........|....."
+    },
+    {
+      "name": "isl_valid",
+      "wave": "0.1...............0|....1...0|....."
+    },
+    {
+      "name": "islv_data",
+      "wave": "x.3.......4...5...x|....5...x|.....",
+      "data": [
+        "key",
+        "iv",
+        "first plaintext",
+        "next plaintext"
+      ]
+    },
+    {},
+    {
+      "name": "oslv_data",
+      "wave": "x..................|6...x....|6...x",
+      "data": [
+        "first ciphertext",
+        "next ciphertext"
+      ]
+    },
+    {
+      "name": "osl_valid",
+      "wave": "0..................|1...0....|1...0"
+    }
+  ]
+}
