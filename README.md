@@ -34,7 +34,7 @@ The core expects key, iv (optional) and plaintext/ciphertext (depending if encry
 
 Example for AES-256 encryption in CFB mode with an interface bitwidth of 32 bit:
 
-![AES toplevel waveform](https://svg.wavedrom.com/github/marph91/yaaes/trunk/doc/aes_toplevel_waveform.json)
+![AES toplevel waveform](https://svg.wavedrom.com/github/marph91/yaaes/add-usage-and-documentation/doc/aes_toplevel_waveform.json)
 
 ## Resource usage
 
