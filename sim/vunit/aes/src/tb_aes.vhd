@@ -62,9 +62,9 @@ begin
 	port map (
     isl_clk   => sl_clk,
     isl_valid => sl_valid_in,
-    islv_plaintext => slv_data_in,
+    islv_data => slv_data_in,
     isl_new_key_iv => sl_new_key_iv,
-    oslv_ciphertext => slv_data_out,
+    oslv_data => slv_data_out,
     osl_valid => sl_valid_out
   );
   
